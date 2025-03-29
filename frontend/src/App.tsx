@@ -8,7 +8,7 @@ import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-
+import VibeGDocLogo from '../public/VibeGDoc.png';
 const theme = {
   // Theme styling goes here
   //...
@@ -30,6 +30,8 @@ function MyOnChangePlugin(props: { onChange: (editorState: EditorState) => void 
       onChange(editorState);
     });
   }, [editor, onChange]);
+
+  return null;
 }
 
 function Editor() {
@@ -44,9 +46,9 @@ function Editor() {
       <RichTextPlugin
         contentEditable={
           <ContentEditable
-            className="h-[300px] w-full rounded-xl border-gray-300 border p-2"
+            className="h-[300px] w-full rounded-xl border-gray-300 border p-4"
             aria-placeholder={'Enter some text...'}
-            placeholder={<div className="absolute top-0 left-0 text-gray-500 p-2">Enter some text...</div>}
+            placeholder={<div className="absolute top-0 left-0 text-gray-500 p-4">Enter some text...</div>}
           />
         }
         ErrorBoundary={LexicalErrorBoundary}
@@ -62,7 +64,10 @@ function Editor() {
 function App() {
   return (
     <div className="w-[80%] m-auto py-10">
-      <h2 className="text-2xl font-bold pb-4">Vibe Google Doc</h2>
+      <h2 className="text-3xl font-bold pb-8">
+        <img src={VibeGDocLogo} alt="Vibe Google Doc" className="w-10 mr-4 inline-block" />
+        Vibe Google Doc
+      </h2>
       <div className="relative">
         <Editor />
       </div>
