@@ -1,7 +1,7 @@
 import './App.css'
 import { $getSelection, $isRangeSelection } from 'lexical';
 import { $setBlocksType } from '@lexical/selection';
-import { $createHeadingNode, HeadingNode } from '@lexical/rich-text';
+import { $createHeadingNode, HeadingNode, HeadingTagType } from '@lexical/rich-text';
 
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
@@ -11,7 +11,6 @@ import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 
 import VibeGDocLogo from '../public/VibeGDoc.png';
-
 
 const theme = {
   heading: {
@@ -39,12 +38,12 @@ function onError(error: Error): void {
 function HeadingPlugin() {
   const [editor] = useLexicalComposerContext();
 
-  const applyHeading = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const applyHeading = (heading: HeadingTagType) => {
     editor.update(() => {
       const selection = $getSelection();
 
       if ($isRangeSelection(selection)) {
-        const headingNode = $createHeadingNode('h1');
+        const headingNode = $createHeadingNode(heading);
         $setBlocksType(selection, () => headingNode);
       }
     });
@@ -52,12 +51,17 @@ function HeadingPlugin() {
 
 
   return (
-    <button
-      className="border border-gray-300 p-2 rounded-md cursor-pointer h-10 mb-1"
-      onClick={applyHeading}
-    >
-      Heading
-    </button>
+    <div>
+      {(['h1', 'h2', 'h3', 'h4', 'h5'] as const).map((heading) => (
+        <button
+          key={heading}
+          className="border border-gray-300 py-2 px-4 rounded-md cursor-pointer h-10 mb-1 mr-2"
+          onClick={() => applyHeading(heading)}
+        >
+          {heading}
+        </button>
+      ))}
+    </div>
   );
 }
 
