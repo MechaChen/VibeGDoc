@@ -1,6 +1,7 @@
 import './App.css'
-import {$getRoot, $getSelection, EditorState} from 'lexical';
-import {useEffect} from 'react';
+import { $getSelection, $isRangeSelection } from 'lexical';
+import { $setBlocksType } from '@lexical/selection';
+import { $createHeadingNode, HeadingNode } from '@lexical/rich-text';
 
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
@@ -8,10 +9,24 @@ import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+
 import VibeGDocLogo from '../public/VibeGDoc.png';
+
+
 const theme = {
-  // Theme styling goes here
-  //...
+  heading: {
+    h1: 'text-2xl font-bold',
+    h2: 'text-xl font-bold',
+    h3: 'text-lg font-bold',
+    h4: 'text-base font-bold',
+    h5: 'text-sm font-bold',
+  },
+  text: {
+    bold: 'font-bold',
+    italic: 'italic',
+    underline: 'underline',
+  },
+  // ... 其他樣式
 }
 
 // Catch any errors that occur during Lexical updates and log them
@@ -21,17 +36,29 @@ function onError(error: Error): void {
   console.error(error);
 }
 
-function MyOnChangePlugin(props: { onChange: (editorState: EditorState) => void }) {
+function HeadingPlugin() {
   const [editor] = useLexicalComposerContext();
-  const { onChange } = props;
 
-  useEffect(() => {
-    return editor.registerUpdateListener(({editorState}) => {
-      onChange(editorState);
+  const applyHeading = (e: React.MouseEvent<HTMLButtonElement>) => {
+    editor.update(() => {
+      const selection = $getSelection();
+
+      if ($isRangeSelection(selection)) {
+        const headingNode = $createHeadingNode('h1');
+        $setBlocksType(selection, () => headingNode);
+      }
     });
-  }, [editor, onChange]);
+  };
 
-  return null;
+
+  return (
+    <button
+      className="border border-gray-300 p-2 rounded-md cursor-pointer h-10 mb-1"
+      onClick={applyHeading}
+    >
+      Heading
+    </button>
+  );
 }
 
 function Editor() {
@@ -39,24 +66,26 @@ function Editor() {
     namespace: 'MyEditor',
     theme,
     onError,
+    nodes: [
+      HeadingNode,
+    ],
   };
+
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
+      <HeadingPlugin />
       <RichTextPlugin
         contentEditable={
           <ContentEditable
             className="h-[300px] w-full rounded-xl border-gray-300 border p-4"
             aria-placeholder={'Enter some text...'}
-            placeholder={<div className="absolute top-0 left-0 text-gray-500 p-4">Enter some text...</div>}
+            placeholder={<div className="absolute top-11 left-0 text-gray-500 p-4">Enter some text...</div>}
           />
         }
         ErrorBoundary={LexicalErrorBoundary}
       />
       <HistoryPlugin />
-      <MyOnChangePlugin onChange={(editorState: EditorState) => {
-        console.log(editorState);
-      }}/>
     </LexicalComposer>
   );
 }

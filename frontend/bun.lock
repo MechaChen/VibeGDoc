@@ -5,6 +5,7 @@
       "name": "frontend",
       "dependencies": {
         "@lexical/react": "^0.29.0",
+        "@lexical/selection": "^0.29.0",
         "@tailwindcss/vite": "^4.0.17",
         "lexical": "^0.29.0",
         "react": "^19.0.0",
