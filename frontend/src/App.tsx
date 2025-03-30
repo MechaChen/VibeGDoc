@@ -13,6 +13,11 @@ import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, ListItemNod
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 
 import VibeGDocLogo from '../public/VibeGDoc.png';
+import typeH1 from './assets/type-h1.svg';
+import typeH2 from './assets/type-h2.svg';
+import typeH3 from './assets/type-h3.svg';
+import listOl from './assets/list-ol.svg';
+import listUl from './assets/list-ul.svg';
 
 const theme = {
   heading: {
@@ -44,23 +49,15 @@ function onError(error: Error): void {
 const headingTags = {
   h1: {
     tag: 'h1',
-    title: 'H1',
+    title: typeH1,
   },
   h2: {
     tag: 'h2',
-    title: 'H2',
+    title: typeH2,
   },
   h3: {
     tag: 'h3',
-    title: 'H3',
-  },
-  h4: {
-    tag: 'h4',
-    title: 'H4',
-  },
-  h5: {
-    tag: 'h5',
-    title: 'H5',
+    title: typeH3,
   },
 } as const
 
@@ -83,12 +80,10 @@ function HeadingPlugin() {
       {Object.keys(headingTags).map((headingTag, index) => (
         <button
           key={headingTag}
-          className={`
-            border border-gray-300 py-2 px-4 cursor-pointer h-10 ${index === 0 ? 'rounded-l-md' : index === Object.keys(headingTags).length - 1 ? 'rounded-r-md' : ''}`
-          }
+          className="py-2 px-4 cursor-pointer w-12 h-12"
           onClick={() => applyHeading(headingTag as HeadingTagType)}
         >
-          {headingTags[headingTag as keyof typeof headingTags].title}
+          <img src={headingTags[headingTag as keyof typeof headingTags].title} alt={headingTag} className="w-full" />
         </button>
       ))}
     </>
@@ -98,11 +93,11 @@ function HeadingPlugin() {
 const listTypes = {
   number: {
     tag: 'number' as ListType,
-    title: 'Number List',
+    title: listOl,
   },
   bullet: {
     tag: 'bullet' as ListType,
-    title: 'Bullet List',
+    title: listUl,
   },
 } as const
 
@@ -124,12 +119,10 @@ function ListToolbarPlugin() {
       {Object.keys(listTypes).map((listType, index) => (
         <button
           key={listType}
-          className={`
-            border border-gray-300 py-2 px-4 cursor-pointer h-10 ${index === 0 ? 'rounded-l-md' : index === Object.keys(listTypes).length - 1 ? 'rounded-r-md' : ''}`
-          }
+          className="py-2 px-4 cursor-pointer w-12 h-12"
           onClick={() => applyList(listType as ListType)}
         >
-          {listTypes[listType as keyof typeof listTypes].title}
+          <img src={listTypes[listType as keyof typeof listTypes].title} alt={listType} className="w-full" />
         </button>
       ))}
     </>
@@ -138,8 +131,9 @@ function ListToolbarPlugin() {
 
 function ToolbarPlugin() {
   return (
-    <div className="mb-2 gap-2">
+    <div className="border border-gray-300 rounded-t-xl flex items-center">
       <HeadingPlugin />
+      <span className="inline-block w-[1px] h-10 bg-gray-300"></span>
       <ListToolbarPlugin />
     </div>
   )
@@ -165,9 +159,9 @@ function Editor() {
       <RichTextPlugin
         contentEditable={
           <ContentEditable
-            className="h-[300px] w-full rounded-xl border-gray-300 border p-4"
+            className="h-[300px] w-full border-b border-l border-r border-gray-300 border p-4 rounded-b-xl"
             aria-placeholder={'Enter some text...'}
-            placeholder={<div className="absolute top-12 left-0 text-gray-500 p-4">Enter some text...</div>}
+            placeholder={<div className="absolute top-11 left-0 text-gray-500 p-4">Enter some text...</div>}
           />
         }
         ErrorBoundary={LexicalErrorBoundary}
