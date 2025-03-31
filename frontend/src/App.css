@@ -2,3 +2,22 @@
   margin: 0 auto;
 }
 
+.vibe-shadow {
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  color: white;
+
+  /* 更穩定乾淨的漸層背景 */
+  background: linear-gradient(90deg, #41d1ff, #bd34fe);
+  
+  /* 添加更細緻、不會髒的陰影 */
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+
+  /* 可選：加上整體陰影讓文字浮起來 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  /* 字型清晰化 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}

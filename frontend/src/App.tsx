@@ -1,23 +1,19 @@
-import './App.css'
-import { $getSelection, $isRangeSelection } from 'lexical';
-import { $setBlocksType } from '@lexical/selection';
-import { $createHeadingNode, HeadingNode, HeadingTagType } from '@lexical/rich-text';
+import { HeadingNode } from '@lexical/rich-text';
+import { ListNode, ListItemNode } from '@lexical/list';
+import { ParagraphNode } from 'lexical';
 
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, ListItemNode, ListNode, ListType } from '@lexical/list';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 
-import VibeGDocLogo from '../public/VibeGDoc.png';
-import typeH1 from './assets/type-h1.svg';
-import typeH2 from './assets/type-h2.svg';
-import typeH3 from './assets/type-h3.svg';
-import listOl from './assets/list-ol.svg';
-import listUl from './assets/list-ul.svg';
+import ToolbarPlugin from './components/ToolbarPlugin';
+import { VibeBannerNode, VibeBannerPlugin } from './components/VibeBannerPlugin/VibeBannerPlugin';
+import VibeGDocLogo from '/VibeGDoc.png';
+
+import './App.css'
 
 const theme = {
   heading: {
@@ -36,6 +32,7 @@ const theme = {
     ol: 'list-decimal ml-8',    // 有序列表的樣式
     ul: 'list-disc ml-8',       // 無序列表的樣式
   },
+  banner: 'py-2 px-4 text-black rounded-xl vibe-shadow',
   // ... 其他樣式
 }
 
@@ -44,99 +41,6 @@ const theme = {
 // try to recover gracefully without losing user data.
 function onError(error: Error): void {
   console.error(error);
-}
-
-const headingTags = {
-  h1: {
-    tag: 'h1',
-    title: typeH1,
-  },
-  h2: {
-    tag: 'h2',
-    title: typeH2,
-  },
-  h3: {
-    tag: 'h3',
-    title: typeH3,
-  },
-} as const
-
-function HeadingPlugin() {
-  const [editor] = useLexicalComposerContext();
-
-  const applyHeading = (heading: HeadingTagType) => {
-    editor.update(() => {
-      const selection = $getSelection();
-
-      if ($isRangeSelection(selection)) {
-        $setBlocksType(selection, () => $createHeadingNode(heading));
-      }
-    });
-  };
-
-
-  return (
-    <>
-      {Object.keys(headingTags).map((headingTag, index) => (
-        <button
-          key={headingTag}
-          className="py-2 px-4 cursor-pointer w-12 h-12"
-          onClick={() => applyHeading(headingTag as HeadingTagType)}
-        >
-          <img src={headingTags[headingTag as keyof typeof headingTags].title} alt={headingTag} className="w-full" />
-        </button>
-      ))}
-    </>
-  );
-}
-
-const listTypes = {
-  number: {
-    tag: 'number' as ListType,
-    title: listOl,
-  },
-  bullet: {
-    tag: 'bullet' as ListType,
-    title: listUl,
-  },
-} as const
-
-function ListToolbarPlugin() {
-  const [editor] = useLexicalComposerContext();
-
-  const applyList = (listType: ListType) => {
-    if (listType === listTypes.number.tag) {
-      editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
-      return true;
-    } else if (listType === listTypes.bullet.tag) {
-      editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
-      return true;
-    }
-  };
-
-  return (
-    <>
-      {Object.keys(listTypes).map((listType, index) => (
-        <button
-          key={listType}
-          className="py-2 px-4 cursor-pointer w-12 h-12"
-          onClick={() => applyList(listType as ListType)}
-        >
-          <img src={listTypes[listType as keyof typeof listTypes].title} alt={listType} className="w-full" />
-        </button>
-      ))}
-    </>
-  );
-}
-
-function ToolbarPlugin() {
-  return (
-    <div className="border border-gray-300 rounded-t-xl flex items-center">
-      <HeadingPlugin />
-      <span className="inline-block w-[1px] h-10 bg-gray-300"></span>
-      <ListToolbarPlugin />
-    </div>
-  )
 }
 
 function Editor() {
@@ -148,6 +52,8 @@ function Editor() {
       HeadingNode,
       ListNode,
       ListItemNode,
+      VibeBannerNode,
+      ParagraphNode,
     ],
   };
 
@@ -156,12 +62,13 @@ function Editor() {
     <LexicalComposer initialConfig={initialConfig}>
       <ToolbarPlugin />
       <ListPlugin />
+      <VibeBannerPlugin />
       <RichTextPlugin
         contentEditable={
           <ContentEditable
-            className="h-[300px] w-full border-b border-l border-r border-gray-300 border p-4 rounded-b-xl"
+            className="h-[300px] w-full border-b border-l border-r border-gray-300 p-4 rounded-b-xl"
             aria-placeholder={'Enter some text...'}
-            placeholder={<div className="absolute top-11 left-0 text-gray-500 p-4">Enter some text...</div>}
+            placeholder={<div className="absolute top-12.5 left-0 text-gray-500 p-4">Enter some text...</div>}
           />
         }
         ErrorBoundary={LexicalErrorBoundary}
