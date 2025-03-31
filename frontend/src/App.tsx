@@ -32,7 +32,7 @@ const theme = {
     ol: 'list-decimal ml-8',    // 有序列表的樣式
     ul: 'list-disc ml-8',       // 無序列表的樣式
   },
-  banner: 'py-2 px-4 text-black rounded-xl vibe-shadow',
+  vibeBanner: 'py-2 px-4 text-black rounded-xl vibe-shadow',
   // ... 其他樣式
 }
 
