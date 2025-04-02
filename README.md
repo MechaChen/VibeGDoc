@@ -10,6 +10,10 @@ An AI-powered collaborative editor for vibe-driven writing, featuring:
 
 ### Frontend & Backend Task Breakdown
 
+Demo :
+
+https://github.com/user-attachments/assets/f3687087-9b4e-4d17-b2fe-d0b66273c22b
+
 🌐 Frontend (React + Lexical)
 
 | Feature               | Description                                                                                       |
