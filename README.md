@@ -12,7 +12,9 @@ An AI-powered collaborative editor for vibe-driven writing, featuring:
 
 Demo :
 
-https://github.com/user-attachments/assets/f3687087-9b4e-4d17-b2fe-d0b66273c22b
+[https://github.com/user-attachments/assets/f3687087-9b4e-4d17-b2fe-d0b66273c22b](https://github.com/user-attachments/assets/c6fa273a-394a-4bac-958a-7fe39cf506a0)
+
+&nbsp;
 
 🌐 Frontend (React + Lexical)
 
