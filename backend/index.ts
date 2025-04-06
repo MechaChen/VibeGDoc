@@ -1,24 +1,24 @@
 import express from "express";
 import OpenAI from "openai";
+import cors from "cors";
 
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY || "",
 });
 
 
 app.post("/ghost-text", async (req, res) => {
-    console.log(req.body);
-
     const completion = await client.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
             {
                 role: "developer",
-                content: `You are an assistant that helps users continue their writing. Respond with only the most natural next sentence based on the user's input.`
+                content: `You are an assistant that helps users continue their writing. Respond with only the most natural next sentence based on the user's input. and give one space before sentence.`
             },
             {
                 role: "user",

@@ -1,19 +1,33 @@
+import * as Y from 'yjs'
+import { WebsocketProvider } from 'y-websocket'
+import { ParagraphNode } from 'lexical';
 import { HeadingNode } from '@lexical/rich-text';
 import { ListNode, ListItemNode } from '@lexical/list';
-import { ParagraphNode } from 'lexical';
-
-import {LexicalComposer} from '@lexical/react/LexicalComposer';
-import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
-import {ContentEditable} from '@lexical/react/LexicalContentEditable';
-import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
-import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
+import { Provider } from '@lexical/yjs';
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
 
 import ToolbarPlugin from './components/ToolbarPlugin';
 import { VibeBannerNode, VibeBannerPlugin } from './components/VibeBannerPlugin/VibeBannerPlugin';
+// import GhostTextPlugin from './components/GhostTextPlugin';
 import VibeGDocLogo from '/VibeGDoc.png';
 
 import './App.css'
+import { useCallback, useEffect, useState } from 'react';
+
+type TUserProfile = {
+  name: string;
+  color: string;
+}
+
+type TActiveUserProfile = TUserProfile & {
+  userId: number;
+}
 
 const theme = {
   heading: {
@@ -43,8 +57,36 @@ function onError(error: Error): void {
   console.error(error);
 }
 
+function getDocFromMap(id: string, yjsDocMap: Map<string, Y.Doc>): Y.Doc {
+
+  let doc = yjsDocMap.get(id);
+
+  if (doc === undefined) {
+    doc = new Y.Doc();
+    yjsDocMap.set(id, doc);
+  } else {
+    doc.load();
+  }
+
+  return doc;
+}
+
+export function createWebsocketProvider(
+  id: string,
+  yjsDocMap: Map<string, Y.Doc>,
+): Provider {
+  const doc = getDocFromMap(id, yjsDocMap);
+
+  const provider = new WebsocketProvider('ws://localhost:1234', id, doc);
+
+  provider.connect();
+  // @ts-expect-error TODO: FIXME
+  return provider;
+}
+
 function Editor() {
   const initialConfig = {
+    editorState: null,
     namespace: 'MyEditor',
     theme,
     onError,
@@ -58,17 +100,79 @@ function Editor() {
   };
 
 
+  const [yjsProvider, setYjsProvider] = useState<null | Provider>(null);
+  const [, setConnected] = useState(false);
+  const [, setActiveUsers] = useState<TActiveUserProfile[]>([]);
+
+  const providerFactory = useCallback(
+    (id: string, yjsDocMap: Map<string, Y.Doc>) => {
+      const provider = createWebsocketProvider(id, yjsDocMap);
+      provider.on('status', (event) => {
+        // console.log(event);
+        setConnected(
+          // Websocket provider
+          event.status === 'connected'
+        );
+      });
+
+      // This is a hack to get reference to provider with standard CollaborationPlugin.
+      // To be fixed in future versions of Lexical.
+      setTimeout(() => setYjsProvider(provider), 0);
+
+      return provider;
+    },
+    [],
+  );
+
+  const handleAwarenessUpdate = useCallback(() => {
+    const awareness = yjsProvider!.awareness!;
+
+    const states = Array.from(awareness.getStates().values());
+
+    setActiveUsers(
+      states.map(
+        (state) => ({
+          color: state.color,
+          name: state.name,
+          userId: Number(state.userId),
+        })
+      )
+    );
+  }, [yjsProvider]);
+
+  useEffect(() => {
+    if (yjsProvider == null) {
+      return;
+    }
+
+    yjsProvider.awareness.on('update', handleAwarenessUpdate);
+
+    return () => yjsProvider.awareness.off('update', handleAwarenessUpdate);
+  }, [yjsProvider, handleAwarenessUpdate]);
+
+
+
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <ToolbarPlugin />
       <ListPlugin />
       <VibeBannerPlugin />
+      {/* <GhostTextPlugin /> */}
+      <CollaborationPlugin
+        id="lexical/react-rich-collab"
+        providerFactory={providerFactory}
+        shouldBootstrap={false}
+      />
       <RichTextPlugin
         contentEditable={
           <ContentEditable
             className="h-[300px] w-full border-b border-l border-r border-gray-300 p-4 rounded-b-xl"
             aria-placeholder={'Enter some text...'}
             placeholder={<div className="absolute top-12.5 left-0 text-gray-500 p-4">Enter some text...</div>}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
           />
         }
         ErrorBoundary={LexicalErrorBoundary}
@@ -78,6 +182,7 @@ function Editor() {
   );
 }
 
+
 function App() {
   return (
     <div className="w-[80%] m-auto py-10">
@@ -85,7 +190,7 @@ function App() {
         <img src={VibeGDocLogo} alt="Vibe Google Doc" className="w-10 mr-4 inline-block" />
         Vibe Google Doc
       </h2>
-      <div className="relative">
+      <div className="editor-wrapper relative">
         <Editor />
       </div>
     </div>
