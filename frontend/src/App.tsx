@@ -50,6 +50,35 @@ const theme = {
   // ... 其他樣式
 }
 
+const userRandomNames: [string, string][] = [
+  ['Pikachu', '#FFD700'],      // Yellow
+  ['Charizard', '#FF4500'],    // Orange-Red
+  ['Bulbasaur', '#228B22'],    // Forest Green
+  ['Squirtle', '#1E90FF'],     // Dodger Blue
+  ['Mewtwo', '#800080'],       // Purple
+  ['Jigglypuff', '#FFB6C1'],   // Light Pink
+  ['Gengar', '#4B0082'],       // Indigo
+  ['Gyarados', '#0000CD'],     // Medium Blue
+  ['Snorlax', '#2F4F4F'],      // Dark Slate Gray
+  ['Dragonite', '#DAA520'],    // Golden Rod
+  ['Eevee', '#8B4513'],        // Saddle Brown
+  ['Mew', '#FF69B4'],          // Hot Pink
+  ['Lugia', '#E6E6FA'],        // Lavender
+  ['Rayquaza', '#006400'],     // Dark Green
+  ['Garchomp', '#483D8B'],     // Dark Slate Blue
+  ['Lucario', '#4169E1'],      // Royal Blue
+];
+
+function getRandomUserProfile(): TUserProfile {
+  const userRandomName = userRandomNames[Math.floor(Math.random() * userRandomNames.length)];
+  return {
+    color: userRandomName[1],
+    name: userRandomName[0],
+  };
+}
+
+const randomUserProfile = getRandomUserProfile();
+
 // Catch any errors that occur during Lexical updates and log them
 // or throw them as needed. If you don't throw them, Lexical will
 // try to recover gracefully without losing user data.
@@ -162,6 +191,8 @@ function Editor() {
         id="lexical/react-rich-collab"
         providerFactory={providerFactory}
         shouldBootstrap={false}
+        username={randomUserProfile.name}
+        cursorColor={randomUserProfile.color}
       />
       <RichTextPlugin
         contentEditable={
