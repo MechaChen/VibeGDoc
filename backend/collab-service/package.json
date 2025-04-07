@@ -1,0 +1,18 @@
+{
+  "name": "collab-service",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "HOST=localhost PORT=1234 bunx y-websocket"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@y/websocket-server": "^0.1.1"
+  }
+}

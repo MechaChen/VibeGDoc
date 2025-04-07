@@ -14,7 +14,7 @@ import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
 
 import ToolbarPlugin from './components/ToolbarPlugin';
 import { VibeBannerNode, VibeBannerPlugin } from './components/VibeBannerPlugin/VibeBannerPlugin';
-// import GhostTextPlugin from './components/GhostTextPlugin';
+import GhostTextPlugin from './components/GhostTextPlugin';
 import VibeGDocLogo from '/VibeGDoc.png';
 
 import './App.css'
@@ -186,7 +186,7 @@ function Editor() {
       <ToolbarPlugin />
       <ListPlugin />
       <VibeBannerPlugin />
-      {/* <GhostTextPlugin /> */}
+      <GhostTextPlugin />
       <CollaborationPlugin
         id="lexical/react-rich-collab"
         providerFactory={providerFactory}
