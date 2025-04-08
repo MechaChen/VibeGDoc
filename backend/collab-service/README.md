@@ -1,15 +1,14 @@
-# collab-service
+# Welcome to your CDK TypeScript project
 
-To install dependencies:
+This is a blank project for CDK development with TypeScript.
 
-```bash
-bun install
-```
+The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
-To run:
+## Useful commands
 
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.2.7. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+* `npm run build`   compile typescript to js
+* `npm run watch`   watch for changes and compile
+* `npm run test`    perform the jest unit tests
+* `npx cdk deploy`  deploy this stack to your default AWS account/region
+* `npx cdk diff`    compare deployed stack with current state
+* `npx cdk synth`   emits the synthesized CloudFormation template

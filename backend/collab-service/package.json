@@ -1,18 +1,27 @@
 {
   "name": "collab-service",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
+  "version": "0.1.0",
+  "bin": {
+    "collab-service": "bin/collab-service.js"
+  },
   "scripts": {
-    "start": "HOST=localhost PORT=1234 bunx y-websocket"
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "start": "node bin/collab-service.js"
   },
   "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
+    "@types/jest": "^29.5.14",
+    "@types/node": "22.7.9",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "aws-cdk": "2.1007.0",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.6.3"
   },
   "dependencies": {
-    "@y/websocket-server": "^0.1.1"
+    "aws-cdk-lib": "^2.188.0",
+    "constructs": "^10.4.2"
   }
 }
