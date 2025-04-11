@@ -41,6 +41,12 @@ Demo :
 
 ### Frontend & Backend Task Breakdown (Redis + Multi-Server Architecture)
 
+Demo :
+
+https://github.com/user-attachments/assets/d7621e80-4c5f-45eb-94a0-35be76a45319
+
+&nbsp;
+
 🌐 Frontend (Lexical + Yjs)
 
 | Feature                 | Description                                                               |
@@ -59,7 +65,7 @@ Demo :
 | Redis Pub/Sub          | Sync updates between servers (use official y-websocket Redis adapter) |
 | Load Balancer Support  | Balance clients across servers and sync updates consistently          |
 
-&nbsp;&nbsp;
+&nbsp;&nbsp;;&nbsp;
 
 ## Phase 2 — Basic Scalable Collaboration Protocol
 
