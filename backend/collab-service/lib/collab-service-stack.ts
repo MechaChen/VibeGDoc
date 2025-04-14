@@ -47,7 +47,7 @@ export class Ec2Stack extends Stack {
       // 安裝 y-websocket 依賴包
       'bun add @y/websocket-server',
       // 使用 PM2 啟動 y-websocket 服務，設置主機和端口
-      'pm2 start "bunx y-websocket" --name y-websocket --interpreter bash --env HOST=0.0.0.0,PORT=1234',
+      'pm2 start --interpreter bash -- bash -c "HOST=0.0.0.0 PORT=1234 bunx y-websocket"',
       // 保存當前的 PM2 進程列表
       'pm2 save',
       // 設置 PM2 開機自啟動，它會讓你的應用程式（這裡是 y-websocket）在 EC2 每次重開機的時候自動重新啟動

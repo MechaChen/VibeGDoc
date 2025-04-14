@@ -11,6 +11,7 @@ import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
+import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
 
 import ToolbarPlugin from './components/ToolbarPlugin';
 import { VibeBannerNode, VibeBannerPlugin } from './components/VibeBannerPlugin/VibeBannerPlugin';
@@ -106,7 +107,7 @@ export function createWebsocketProvider(
 ): Provider {
   const doc = getDocFromMap(id, yjsDocMap);
 
-  const provider = new WebsocketProvider('ws://ec2-44-203-105-85.compute-1.amazonaws.com:1234', id, doc);
+  const provider = new WebsocketProvider('ws://collab-alb-1299889064.us-east-1.elb.amazonaws.com', id, doc);
 
   provider.connect();
   // @ts-expect-error TODO: FIXME
@@ -209,6 +210,7 @@ function Editor() {
         ErrorBoundary={LexicalErrorBoundary}
       />
       <HistoryPlugin />
+      <AutoFocusPlugin />
     </LexicalComposer>
   );
 }
