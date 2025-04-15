@@ -26,6 +26,8 @@ Demo :
 | Voice Input           | Convert speech to text using Web Speech API, insert via `editor.update(() => insertText)`         |
 | MCP Plugin            | AI side panel, apply result with custom command to insert text                                    |
 
+&nbsp;
+
 🖥️ Backend (Node.js + AWS Lambda optional)
 
 | Feature          | Description                                                  |
@@ -56,6 +58,8 @@ https://github.com/user-attachments/assets/5b0f88b1-6cfe-4019-a8a9-8db1bba6ff6b
 | Awareness               | Show collaborator cursor, name, color via Yjs awareness                   |
 | Voice AI Insert         | Insert voice-to-text result directly into Lexical document, synced by Yjs |
 
+&nbsp;
+
 🖥️ Backend (Node.js + WebSocket + Redis)
 
 | Feature                | Description                                                           |
@@ -80,6 +84,8 @@ https://github.com/user-attachments/assets/5b0f88b1-6cfe-4019-a8a9-8db1bba6ff6b
 | In-flight control  | Limit one pending edit at a time                          |
 | MCP Apply → Buffer | Add operation into buffer on apply                        |
 
+&nbsp;
+
 🖥️ Backend (Node.js + Custom WebSocket Server)
 
 | Feature                   | Description                                   |
@@ -102,6 +108,8 @@ https://github.com/user-attachments/assets/5b0f88b1-6cfe-4019-a8a9-8db1bba6ff6b
 | IndexedDB caching | Use `y-indexeddb` to store offline state/snapshot |
 | Snapshot UI       | Allow switching between snapshot versions         |
 | Autosave          | Periodically upload Yjs snapshot to backend       |
+
+&nbsp;
 
 🖥️ Backend (Node.js + AWS)
 
