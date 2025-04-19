@@ -7,7 +7,7 @@
  */
 
 import type {Binding, Provider, SyncCursorPositionsFn} from '@lexical/yjs';
-import type {LexicalEditor} from 'lexical';
+import type {LexicalEditor, NodeKey} from 'lexical';
 import type {JSX} from 'react';
 
 import {mergeRegister} from '@lexical/utils';
@@ -29,6 +29,7 @@ import {
   CAN_REDO_COMMAND,
   CAN_UNDO_COMMAND,
   COMMAND_PRIORITY_EDITOR,
+  EditorState,
   FOCUS_COMMAND,
   REDO_COMMAND,
   UNDO_COMMAND,
@@ -60,6 +61,17 @@ export function useYjsCollaboration(
   syncCursorPositionsFn: SyncCursorPositionsFn = syncCursorPositions,
 ): JSX.Element {
   const isReloadingDoc = useRef(false);
+  const localBuffer = useRef<{
+    binding: Binding;
+    provider: Provider;
+    prevEditorState: EditorState;
+    editorState: EditorState;
+    dirtyElements: Map<NodeKey, boolean>;
+    dirtyLeaves: Set<NodeKey>;
+    normalizedNodes: Set<NodeKey>;
+    tags: Set<string>;
+  }[]>([]);
+  const isSyncing = useRef(false);
 
   const connect = useCallback(() => provider.connect(), [provider]);
 
@@ -73,6 +85,27 @@ export function useYjsCollaboration(
     }
   }, [provider]);
 
+  const flushLocalBuffer = useCallback(() => {
+    if (isSyncing.current) {
+      return;
+    }
+
+    isSyncing.current = true;
+    const updates = localBuffer.current.splice(0, localBuffer.current.length);
+    updates.forEach(({ prevEditorState, editorState, dirtyElements, dirtyLeaves, normalizedNodes, tags }, index) => {
+      syncLexicalUpdateToYjs(
+        binding,
+        provider,
+        prevEditorState,
+        editorState,
+        dirtyElements,
+        dirtyLeaves,
+        normalizedNodes,
+        tags
+      );
+    });
+  }, [binding, provider]);
+
   useEffect(() => {
     const {root} = binding;
     const {awareness} = provider;
@@ -82,6 +115,8 @@ export function useYjsCollaboration(
     };
 
     const onSync = (isSynced: boolean) => {
+      console.log('onSync', isSynced);
+
       if (
         shouldBootstrap &&
         isSynced &&
@@ -96,6 +131,7 @@ export function useYjsCollaboration(
     };
 
     const onAwarenessUpdate = () => {
+      console.log('onAwarenessUpdate');
       syncCursorPositionsFn(binding, provider);
     };
 
@@ -105,9 +141,13 @@ export function useYjsCollaboration(
       events: Array<YEvent<any>>,
       transaction: Transaction,
     ) => {
+      isSyncing.current = false;
       const origin = transaction.origin;
       if (origin !== binding) {
         const isFromUndoManger = origin instanceof UndoManager;
+
+        localBuffer.current = [];
+
         syncYjsChangesToLexical(
           binding,
           provider,
@@ -127,15 +167,22 @@ export function useYjsCollaboration(
     );
 
     const onProviderDocReload = (ydoc: Doc) => {
+      console.log('onProviderDocReload');
       clearEditorSkipCollab(editor, binding);
       setDoc(ydoc);
       docMap.set(id, ydoc);
       isReloadingDoc.current = true;
     };
 
+    const onUpdate = () => {
+      localBuffer.current = [];
+      isSyncing.current = false;
+    };
+
     provider.on('reload', onProviderDocReload);
     provider.on('status', onStatus);
     provider.on('sync', onSync);
+    window.addEventListener('yjs-update', onUpdate);
     awareness.on('update', onAwarenessUpdate);
     // This updates the local editor state when we receive updates from other clients
     root.getSharedType().observeDeep(onYjsTreeChanges);
@@ -149,7 +196,7 @@ export function useYjsCollaboration(
         tags,
       }) => {
         if (tags.has(SKIP_COLLAB_TAG) === false) {
-          syncLexicalUpdateToYjs(
+          localBuffer.current.push({
             binding,
             provider,
             prevEditorState,
@@ -158,7 +205,11 @@ export function useYjsCollaboration(
             dirtyLeaves,
             normalizedNodes,
             tags,
-          );
+          });
+
+          if (!isSyncing.current) {
+            flushLocalBuffer();
+          }
         }
       },
     );
@@ -189,22 +240,8 @@ export function useYjsCollaboration(
       docMap.delete(id);
       removeListener();
     };
-  }, [
-    binding,
-    color,
-    connect,
-    disconnect,
-    docMap,
-    editor,
-    id,
-    initialEditorState,
-    name,
-    provider,
-    shouldBootstrap,
-    awarenessData,
-    setDoc,
-    syncCursorPositionsFn,
-  ]);
+  }, [binding, color, connect, disconnect, docMap, editor, id, initialEditorState, name, provider, shouldBootstrap, awarenessData, setDoc, syncCursorPositionsFn, flushLocalBuffer]);
+
   const cursorsContainer = useMemo(() => {
     const ref = (element: null | HTMLElement) => {
       binding.cursorsContainer = element;

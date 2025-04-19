@@ -1,5 +1,5 @@
 import * as Y from 'yjs'
-import { WebsocketProvider } from 'y-websocket'
+import { useCallback, useEffect, useState } from 'react';
 import { ParagraphNode } from 'lexical';
 import { HeadingNode } from '@lexical/rich-text';
 import { ListNode, ListItemNode } from '@lexical/list';
@@ -12,14 +12,15 @@ import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
 
+import { WebsocketProvider } from './lib/y-websocket'
 import { CollaborationPlugin } from './lib/@lexical/react/LexicalCollaborationPlugin';
+
 import ToolbarPlugin from './components/ToolbarPlugin';
 import { VibeBannerNode, VibeBannerPlugin } from './components/VibeBannerPlugin/VibeBannerPlugin';
 import GhostTextPlugin from './components/GhostTextPlugin';
 import VibeGDocLogo from '/VibeGDoc.png';
 
 import './App.css'
-import { useCallback, useEffect, useState } from 'react';
 
 type TUserProfile = {
   name: string;
@@ -107,8 +108,8 @@ export function createWebsocketProvider(
 ): Provider {
   const doc = getDocFromMap(id, yjsDocMap);
 
-  const provider = new WebsocketProvider('ws://collab-alb-1299889064.us-east-1.elb.amazonaws.com', id, doc);
-
+  // const provider = new WebsocketProvider('ws://collab-alb-1299889064.us-east-1.elb.amazonaws.com', id, doc);
+  const provider = new WebsocketProvider('ws://localhost:1234', id, doc);
   provider.connect();
   // @ts-expect-error TODO: FIXME
   return provider;
@@ -144,6 +145,10 @@ function Editor() {
           event.status === 'connected'
         );
       });
+
+      provider.ws.onmessage = (event) => {
+        console.log('websocket.onmessage', event.data)
+      }
 
       // This is a hack to get reference to provider with standard CollaborationPlugin.
       // To be fixed in future versions of Lexical.

@@ -21,6 +21,7 @@
     "typescript": "~5.6.3"
   },
   "dependencies": {
+    "@y/websocket-server": "^0.1.1",
     "aws-cdk-lib": "^2.188.0",
     "constructs": "^10.4.2"
   }

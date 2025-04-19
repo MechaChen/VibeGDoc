@@ -15,10 +15,13 @@
     "@lexical/selection": "^0.29.0",
     "@tailwindcss/vite": "^4.0.17",
     "lexical": "^0.29.0",
+    "lib0": "^0.2.104",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.0.17",
-    "y-websocket": "^3.0.0"
+    "y-protocols": "^1.0.6",
+    "y-websocket": "^3.0.0",
+    "yjs": "^13.6.25"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
