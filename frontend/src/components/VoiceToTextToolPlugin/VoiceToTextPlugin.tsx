@@ -1,5 +1,5 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRef } from 'react';
 import { $getSelection, $isRangeSelection } from 'lexical';
 
@@ -8,6 +8,11 @@ import micFill from '../../assets/mic-fill.svg';
 import xCircle from '../../assets/x-circle.svg';
 import bouncingCircles from '../../assets/bouncing-circles.svg';
 import { tool_hover_style, tool_layout, tool_tooltip_style } from '../ToolbarPlugin/styles';
+
+const soundBarWidth = 2;
+const soundBarGap = 1;
+const soundBarColor = "#666";
+const maxVoiceAmplitude = 255;
 
 async function sendToBackend(file: File) {
     const formData = new FormData();
@@ -29,69 +34,78 @@ export default function VoiceToTextToolPlugin() {
     const [isTranslating, setIsTranslating] = useState(false);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const chunksRef = useRef<BlobPart[]>([]);
+    const userStreamRef = useRef<MediaStream | null>(null);
   
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const audioContextRef = useRef<AudioContext | null>(null);
     const analyserRef = useRef<AnalyserNode | null>(null);
     const animationRef = useRef<number | null>(null);
-    const waveformBarsRef = useRef<number[]>([]);
-    const userStreamRef = useRef<MediaStream | null>(null);
-    const drawWaveform = () => {
+    const allFramesAvgAmplitude = useRef<number[]>([]);
+
+    const getCurFrameAvgAmplitude = (dataArray: Uint8Array) => (
+      dataArray.reduce((a, b) => a + b, 0) / dataArray.length
+    );
+
+    const clearCanvasContent = () => {
+      const canvas = canvasRef.current;
+      const canvasCtx = canvas?.getContext("2d");
+
+      if (!canvas || !canvasCtx) return;
+
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    const drawSoundBar = (avgAmplitude: number, i: number) => {
+      if (!canvasRef.current || !analyserRef.current) return;
+
+      const canvas = canvasRef.current;
+      const canvasCtx = canvas?.getContext("2d");
+
+      const rightMostX = canvas?.width;
+      const allRightBarsWidth = i * (soundBarWidth + soundBarGap);
+      const startX = rightMostX - allRightBarsWidth;
+      
+      const heightFromAmplitude = (avgAmplitude / maxVoiceAmplitude) * canvas.height;
+      const restEmptyHeight = canvas.height - heightFromAmplitude;
+      const startY = restEmptyHeight / 2;
+
+      canvasCtx!.fillStyle = soundBarColor;
+      canvasCtx!.fillRect(startX, startY, soundBarWidth, heightFromAmplitude);
+    }
+
+    const drawSoundWaveCanvas = useCallback(() => {
       if (!canvasRef.current || !analyserRef.current) return;
       const canvas = canvasRef.current;
-      const canvasCtx = canvas.getContext("2d");
       const analyser = analyserRef.current;
-      if (!canvasCtx || !analyser) return;
-  
+      
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
-  
-      const draw = () => {
-        animationRef.current = requestAnimationFrame(draw);
+      
+      const drawStartToCurVoiceFrame = () => {
+        animationRef.current = requestAnimationFrame(drawStartToCurVoiceFrame);
         analyser.getByteFrequencyData(dataArray);
   
-        const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-        waveformBarsRef.current.push(avg);
+        const curFrameAvgAmplitude = getCurFrameAvgAmplitude(dataArray);
+        allFramesAvgAmplitude.current.push(curFrameAvgAmplitude);
   
-        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+        clearCanvasContent();
   
-        const barWidth = 2;
-        const barGap = 1;
-        const totalBars = Math.floor(canvas.width / (barWidth + barGap));
-        const bars = waveformBarsRef.current.slice(-totalBars).reverse();
+        const barCapacity = Math.floor(canvas.width / (soundBarWidth + soundBarGap));
+        const visibleOldToNewAmplitudes = allFramesAvgAmplitude.current.slice(-barCapacity).reverse();
+        visibleOldToNewAmplitudes.forEach(drawSoundBar);
   
-        bars.forEach((value, i) => {
-          const barHeight = (value / 255) * canvas.height;
-          const x = canvas.width - (i + 1) * (barWidth + barGap);
-          const y = (canvas.height - barHeight) / 2;
-          canvasCtx.fillStyle = "#666";
-          canvasCtx.fillRect(x, y, barWidth, barHeight);
-        });
-  
-        if (waveformBarsRef.current.length > totalBars) {
-          waveformBarsRef.current = waveformBarsRef.current.slice(-totalBars);
+        if (allFramesAvgAmplitude.current.length > barCapacity) {
+          allFramesAvgAmplitude.current = allFramesAvgAmplitude.current.slice(-barCapacity);
         }
       };
   
-      draw();
-    };
+      drawStartToCurVoiceFrame();
+    }, []);
   
-    const startRecording = async () => {
+    const startRecording = useCallback(async () => {
       try {
         const userStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         userStreamRef.current = userStream;
-        // the sound wave ui analyzer
-  
-        const audioContext = new AudioContext();
-        const analyser = audioContext.createAnalyser();
-        analyser.fftSize = 128;
-        const source = audioContext.createMediaStreamSource(userStream);
-        source.connect(analyser);
-        audioContextRef.current = audioContext;
-        analyserRef.current = analyser;
-        waveformBarsRef.current = [];
-        drawWaveform();
-  
+
         const recorder = new MediaRecorder(userStream);
         mediaRecorderRef.current = recorder;
         chunksRef.current = [];
@@ -120,61 +134,49 @@ export default function VoiceToTextToolPlugin() {
   
         recorder.start();
         setIsListening(true);
+        
+        // the sound wave ui analyzer
+        const audioContext = new AudioContext();
+        const analyser = audioContext.createAnalyser();
+
+        analyserRef.current = analyser;
+        analyser.fftSize = 128;
+        const source = audioContext.createMediaStreamSource(userStream);
+        source.connect(analyser);
+
+        allFramesAvgAmplitude.current = [];
+        drawSoundWaveCanvas();
       } catch (err) {
         console.error('麥克風權限取得失敗:', err);
         setIsListening(false);
       }
-    };
+    }, [drawSoundWaveCanvas, editor]);
   
-    const stopRecording = () => {
+    const stopRecording = useCallback(() => {
       mediaRecorderRef.current?.stop();
       setIsListening(false);
-    }
-  
-    const cancelRecording = () => {
-      // Stop recorder if still running
-      if (mediaRecorderRef.current?.state === 'recording') {
-        // 移除 onstop 事件處理器
-        mediaRecorderRef.current.onstop = null;
-        mediaRecorderRef.current.stop();
+    }, []);
+
+    const toggleRecording = useCallback(() => {
+      if (isListening) {
+        stopRecording();
+      } else {
+        startRecording();
       }
-    
-      // 清空 chunks
-      chunksRef.current = [];
-    
-      // 停止並釋放所有 audio stream
-      if (userStreamRef.current) {
-        userStreamRef.current.getTracks().forEach(track => track.stop());
-        userStreamRef.current = null;
-      }
-    
-      // 清除 MediaRecorder
-      mediaRecorderRef.current = null;
-    
-      // 更新 UI 狀態
-      setIsListening(false);
-    };
+    }, [isListening, startRecording, stopRecording]);
   
-    
-    return (
-      <>
-        {isTranslating ? (
-          <div className={`group ${tool_layout} flex items-center`}>
-            <img src={bouncingCircles} alt="Translating" className="w-full" />
-          </div>
-        ) : (
-          <button className={`group ${tool_layout} ${tool_hover_style}`} onClick={() => {
-              if (isListening) {
-                stopRecording();
-              } else {
-              startRecording();
-            }
-          }}>
+    const VoiceToTextButton = useMemo(() => {
+      return isTranslating ? (
+        <div className={`group ${tool_layout} flex items-center`}>
+          <img src={bouncingCircles} alt="Translating" className="w-full" />
+        </div>
+      ) : (
+        <button className={`group ${tool_layout} ${tool_hover_style}`} onClick={toggleRecording}>
           <img src={isListening ? micFill : mic} alt="Voice to Text" className="w-full" />
           <div className={tool_tooltip_style}>
             {isListening ? 'Stop Listening' : 'Voice to Text'}
           </div>
-  
+
           <div className={`absolute z-10 left-1/2 -translate-x-1/2 -top-15 px-2 bg-white border border-gray-300 rounded-lg ${!isListening && 'hidden'}`}>
             <canvas
               ref={canvasRef}
@@ -182,22 +184,55 @@ export default function VoiceToTextToolPlugin() {
               height={40}
             />
           </div>
-        </button>)}
-  
-        <button 
-          className={`group ${tool_layout} ${!isListening ? 'opacity-20 cursor-not-allowed' : tool_hover_style}`} 
-          onClick={() => {
-            if (isListening) {
-              cancelRecording();
-            }
-          }}
-          disabled={!isListening}
-        >
-          <img src={xCircle} alt="Cancel" className="w-full" />
-          <div className={tool_tooltip_style}>
-            Cancel
-          </div>
         </button>
-      </>
+      )
+    }, [isListening, isTranslating, toggleRecording]);
+
+  const cancelRecording = useCallback(() => {
+    if (!isListening) return;
+
+    // Stop recorder if still running
+    if (mediaRecorderRef.current?.state === 'recording') {
+      // 移除 onstop 事件處理器
+      mediaRecorderRef.current.onstop = null;
+      mediaRecorderRef.current.stop();
+    }
+  
+    // 清空 chunks
+    chunksRef.current = [];
+  
+    // 停止並釋放所有 audio stream
+    if (userStreamRef.current) {
+      userStreamRef.current.getTracks().forEach(track => track.stop());
+      userStreamRef.current = null;
+    }
+  
+    // 清除 MediaRecorder
+    mediaRecorderRef.current = null;
+  
+    setIsListening(false);
+  }, [isListening]);
+
+  const RemoveVoiceButton = useMemo(() => {
+    return (
+      <button 
+        className={`group ${tool_layout} ${!isListening ? 'opacity-20 cursor-not-allowed' : tool_hover_style}`} 
+        onClick={cancelRecording}
+        disabled={!isListening}
+      >
+        <img src={xCircle} alt="Cancel" className="w-full" />
+        <div className={tool_tooltip_style}>
+          Cancel
+        </div>
+      </button>
     )
-  }
+  }, [isListening, cancelRecording]);
+  
+    
+  return (
+    <>
+      {VoiceToTextButton}
+      {RemoveVoiceButton}
+    </>
+  )
+}
