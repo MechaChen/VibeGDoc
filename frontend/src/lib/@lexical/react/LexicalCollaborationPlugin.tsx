@@ -20,7 +20,7 @@ import {
   Provider,
 } from '@lexical/yjs';
 import {LexicalEditor} from 'lexical';
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 
 import {InitialEditorStateType} from './LexicalComposer.tsx';
 import {
@@ -29,7 +29,6 @@ import {
   useYjsFocusTracking,
   useYjsHistory,
 } from './shared/useYjsCollaboration.tsx';
-import Circle from '../../../assets/circle.svg';
 import CheckCircle from '../../../assets/check-circle.svg';
 import CheckCircleFill from '../../../assets/check-circle-fill.svg';
 
