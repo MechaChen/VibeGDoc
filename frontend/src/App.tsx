@@ -53,22 +53,22 @@ const theme = {
 }
 
 const userRandomNames: [string, string][] = [
-  ['Pikachu', '#FFD700'],      // Yellow
-  ['Charizard', '#FF4500'],    // Orange-Red
-  ['Bulbasaur', '#228B22'],    // Forest Green
-  ['Squirtle', '#1E90FF'],     // Dodger Blue
-  ['Mewtwo', '#800080'],       // Purple
-  ['Jigglypuff', '#FFB6C1'],   // Light Pink
-  ['Gengar', '#4B0082'],       // Indigo
-  ['Gyarados', '#0000CD'],     // Medium Blue
-  ['Snorlax', '#2F4F4F'],      // Dark Slate Gray
-  ['Dragonite', '#DAA520'],    // Golden Rod
-  ['Eevee', '#8B4513'],        // Saddle Brown
-  ['Mew', '#FF69B4'],          // Hot Pink
-  ['Lugia', '#E6E6FA'],        // Lavender
-  ['Rayquaza', '#006400'],     // Dark Green
-  ['Garchomp', '#483D8B'],     // Dark Slate Blue
-  ['Lucario', '#4169E1'],      // Royal Blue
+  ['⚡ Pikachu', '#FFD700'],      // Yellow
+  ['🔥 Charizard', '#FF4500'],    // Orange-Red
+  ['🌱 Bulbasaur', '#228B22'],    // Forest Green
+  ['💧 Squirtle', '#1E90FF'],     // Dodger Blue
+  ['🔮 Mewtwo', '#800080'],       // Purple
+  ['🎤 Jigglypuff', '#FFB6C1'],   // Light Pink
+  ['👻 Gengar', '#4B0082'],       // Indigo
+  ['🌊 Gyarados', '#0000CD'],     // Medium Blue
+  ['💤 Snorlax', '#2F4F4F'],      // Dark Slate Gray
+  ['🐉 Dragonite', '#DAA520'],    // Golden Rod
+  ['🦊 Eevee', '#8B4513'],        // Saddle Brown
+  ['✨ Mew', '#FF69B4'],          // Hot Pink
+  ['🌟 Lugia', '#E6E6FA'],        // Lavender
+  ['🐲 Rayquaza', '#006400'],     // Dark Green
+  ['🦈 Garchomp', '#483D8B'],     // Dark Slate Blue
+  ['🐺 Lucario', '#4169E1'],      // Royal Blue
 ];
 
 function getRandomUserProfile(): TUserProfile {
@@ -146,10 +146,6 @@ function Editor() {
         );
       });
 
-      provider.ws.onmessage = (event) => {
-        console.log('websocket.onmessage', event.data)
-      }
-
       // This is a hack to get reference to provider with standard CollaborationPlugin.
       // To be fixed in future versions of Lexical.
       setTimeout(() => setYjsProvider(provider), 0);
@@ -224,7 +220,7 @@ function Editor() {
 function App() {
   return (
     <div className="w-[80%] m-auto py-10">
-      <h2 className="text-3xl font-bold pb-8">
+      <h2 className="text-3xl font-bold pb-16">
         <img src={VibeGDocLogo} alt="Vibe Google Doc" className="w-10 mr-4 inline-block" />
         Vibe Google Doc
       </h2>

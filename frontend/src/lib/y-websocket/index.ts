@@ -189,7 +189,7 @@ const setupWS = (provider) => {
         websocket.send(encoding.toUint8Array(encoder))
       }
 
-      window.dispatchEvent(new Event('yjs-update'))
+      window.dispatchEvent(new Event('yjs-server-updated'))
     }
     websocket.onerror = (event) => {
       provider.emit('connection-error', [event, provider])

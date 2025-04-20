@@ -59,8 +59,12 @@ export function useYjsCollaboration(
   initialEditorState?: InitialEditorStateType,
   awarenessData?: object,
   syncCursorPositionsFn: SyncCursorPositionsFn = syncCursorPositions,
-): JSX.Element {
+): {
+  cursorsContainer: JSX.Element;
+  isSyncing: boolean;
+} {
   const isReloadingDoc = useRef(false);
+  const isSyncing = useRef(false);
   const localBuffer = useRef<{
     binding: Binding;
     provider: Provider;
@@ -71,8 +75,7 @@ export function useYjsCollaboration(
     normalizedNodes: Set<NodeKey>;
     tags: Set<string>;
   }[]>([]);
-  const isSyncing = useRef(false);
-
+  
   const connect = useCallback(() => provider.connect(), [provider]);
 
   const disconnect = useCallback(() => {
@@ -90,9 +93,11 @@ export function useYjsCollaboration(
       return;
     }
 
+    console.log('flushLocalBuffer', localBuffer.current);
+
     isSyncing.current = true;
     const updates = localBuffer.current.splice(0, localBuffer.current.length);
-    updates.forEach(({ prevEditorState, editorState, dirtyElements, dirtyLeaves, normalizedNodes, tags }, index) => {
+    updates.forEach(({ prevEditorState, editorState, dirtyElements, dirtyLeaves, normalizedNodes, tags }) => {
       syncLexicalUpdateToYjs(
         binding,
         provider,
@@ -104,7 +109,7 @@ export function useYjsCollaboration(
         tags
       );
     });
-  }, [binding, provider]);
+  }, [binding, provider, isSyncing]);
 
   useEffect(() => {
     const {root} = binding;
@@ -115,8 +120,6 @@ export function useYjsCollaboration(
     };
 
     const onSync = (isSynced: boolean) => {
-      console.log('onSync', isSynced);
-
       if (
         shouldBootstrap &&
         isSynced &&
@@ -131,7 +134,6 @@ export function useYjsCollaboration(
     };
 
     const onAwarenessUpdate = () => {
-      console.log('onAwarenessUpdate');
       syncCursorPositionsFn(binding, provider);
     };
 
@@ -145,8 +147,6 @@ export function useYjsCollaboration(
       const origin = transaction.origin;
       if (origin !== binding) {
         const isFromUndoManger = origin instanceof UndoManager;
-
-        localBuffer.current = [];
 
         syncYjsChangesToLexical(
           binding,
@@ -167,7 +167,6 @@ export function useYjsCollaboration(
     );
 
     const onProviderDocReload = (ydoc: Doc) => {
-      console.log('onProviderDocReload');
       clearEditorSkipCollab(editor, binding);
       setDoc(ydoc);
       docMap.set(id, ydoc);
@@ -175,6 +174,7 @@ export function useYjsCollaboration(
     };
 
     const onUpdate = () => {
+      console.log('onUpdate buffer', localBuffer.current);
       localBuffer.current = [];
       isSyncing.current = false;
     };
@@ -182,7 +182,7 @@ export function useYjsCollaboration(
     provider.on('reload', onProviderDocReload);
     provider.on('status', onStatus);
     provider.on('sync', onSync);
-    window.addEventListener('yjs-update', onUpdate);
+    window.addEventListener('yjs-server-updated', onUpdate);
     awareness.on('update', onAwarenessUpdate);
     // This updates the local editor state when we receive updates from other clients
     root.getSharedType().observeDeep(onYjsTreeChanges);
@@ -196,6 +196,7 @@ export function useYjsCollaboration(
         tags,
       }) => {
         if (tags.has(SKIP_COLLAB_TAG) === false) {
+          window.dispatchEvent(new Event('editor-updated'));
           localBuffer.current.push({
             binding,
             provider,
@@ -240,7 +241,24 @@ export function useYjsCollaboration(
       docMap.delete(id);
       removeListener();
     };
-  }, [binding, color, connect, disconnect, docMap, editor, id, initialEditorState, name, provider, shouldBootstrap, awarenessData, setDoc, syncCursorPositionsFn, flushLocalBuffer]);
+  }, [
+    binding,
+    color,
+    connect,
+    disconnect,
+    docMap,
+    editor,
+    id,
+    initialEditorState,
+    name,
+    provider,
+    shouldBootstrap,
+    awarenessData,
+    setDoc,
+    syncCursorPositionsFn,
+    flushLocalBuffer,
+    isSyncing,
+  ]);
 
   const cursorsContainer = useMemo(() => {
     const ref = (element: null | HTMLElement) => {
@@ -260,12 +278,8 @@ export function useYjsCollaboration(
         const shouldConnect = payload;
 
         if (shouldConnect) {
-           
-          console.log('Collaboration connected!');
           connect();
         } else {
-           
-          console.log('Collaboration disconnected!');
           disconnect();
         }
 
@@ -275,7 +289,10 @@ export function useYjsCollaboration(
     );
   }, [connect, disconnect, editor]);
 
-  return cursorsContainer;
+  return {
+    cursorsContainer,
+    isSyncing: isSyncing.current,
+  };
 }
 
 export function useYjsFocusTracking(

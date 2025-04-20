@@ -1,12 +1,23 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $setBlocksType } from '@lexical/selection';
 import type { EditorConfig, LexicalNode } from 'lexical';
-import { $createParagraphNode, $getSelection, $isRangeSelection, COMMAND_PRIORITY_EDITOR, COMMAND_PRIORITY_LOW, createCommand, ElementNode, INSERT_LINE_BREAK_COMMAND, INSERT_PARAGRAPH_COMMAND, KEY_ENTER_COMMAND } from 'lexical';
+import {
+  $createParagraphNode,
+  $getSelection,
+  $isRangeSelection,
+  COMMAND_PRIORITY_EDITOR,
+  COMMAND_PRIORITY_LOW,
+  createCommand,
+  ElementNode,
+  INSERT_LINE_BREAK_COMMAND,
+  INSERT_PARAGRAPH_COMMAND,
+  KEY_ENTER_COMMAND,
+} from 'lexical';
 
 export class VibeBannerNode extends ElementNode {
-    static getType() {
-        return 'vibeBanner';
-    }
+  static getType() {
+      return 'vibeBanner';
+  }
 
 	static clone(node: VibeBannerNode): VibeBannerNode {
 		return new VibeBannerNode(node.__key);

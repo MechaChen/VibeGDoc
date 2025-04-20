@@ -8,7 +8,6 @@
 
 import type {JSX} from 'react';
 import type {Doc} from 'yjs';
-
 import {
   type CollaborationContextType,
   useCollaborationContext,
@@ -21,7 +20,7 @@ import {
   Provider,
 } from '@lexical/yjs';
 import {LexicalEditor} from 'lexical';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 
 import {InitialEditorStateType} from './LexicalComposer.tsx';
 import {
@@ -30,6 +29,9 @@ import {
   useYjsFocusTracking,
   useYjsHistory,
 } from './shared/useYjsCollaboration.tsx';
+import Circle from '../../../assets/circle.svg';
+import CheckCircle from '../../../assets/check-circle.svg';
+import CheckCircleFill from '../../../assets/check-circle-fill.svg';
 
 type Props = {
   id: string;
@@ -131,22 +133,62 @@ export function CollaborationPlugin({
   }
 
   return (
-    <YjsCollaborationCursors
-      awarenessData={awarenessData}
-      binding={binding}
-      collabContext={collabContext}
-      color={color}
-      cursorsContainerRef={cursorsContainerRef}
-      editor={editor}
-      id={id}
-      initialEditorState={initialEditorState}
-      name={name}
-      provider={provider}
-      setDoc={setDoc}
-      shouldBootstrap={shouldBootstrap}
-      yjsDocMap={yjsDocMap}
-    />
+    <>
+      <YjsCollaborationCursors
+        awarenessData={awarenessData}
+        binding={binding}
+        collabContext={collabContext}
+        color={color}
+        cursorsContainerRef={cursorsContainerRef}
+        editor={editor}
+        id={id}
+        initialEditorState={initialEditorState}
+        name={name}
+          provider={provider}
+          setDoc={setDoc}
+          shouldBootstrap={shouldBootstrap}
+          yjsDocMap={yjsDocMap}
+      />
+    </>
   );
+}
+
+function SyncingStatus() {
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const showSyncingStatus = () => {
+    setIsSyncing(true);
+  }
+
+  const showSyncedStatus = () => {
+    setIsSyncing(false);
+  }
+
+  useEffect(() => {
+    window.addEventListener('editor-updated', showSyncingStatus);
+    window.addEventListener('yjs-server-updated', showSyncedStatus);
+
+    return () => {
+      window.removeEventListener('editor-updated', showSyncingStatus);
+      window.removeEventListener('yjs-server-updated', showSyncedStatus);
+    };
+  }, []);
+
+  return (
+    <div className="absolute -top-8 left-0 flex items-center gap-2">
+      {isSyncing ? (
+        <>
+          <img src={CheckCircle} alt="Syncing" className="w-4" />
+          <span>Syncing</span>
+        </>
+      ) : (
+        <>
+          <img src={CheckCircleFill} alt="Synced" className="w-4" />
+          <span>Synced</span>
+        </>
+      )}
+    </div>
+  )
 }
 
 function YjsCollaborationCursors({
@@ -178,7 +220,7 @@ function YjsCollaborationCursors({
   awarenessData?: object;
   collabContext: CollaborationContextType;
 }) {
-  const cursors = useYjsCollaboration(
+  const collabCursorsAndStatus = useYjsCollaboration(
     editor,
     id,
     provider,
@@ -198,5 +240,11 @@ function YjsCollaborationCursors({
   useYjsHistory(editor, binding);
   useYjsFocusTracking(editor, provider, name, color, awarenessData);
 
-  return cursors;
+
+  return (
+    <>
+      <SyncingStatus />
+      {collabCursorsAndStatus.cursorsContainer}
+    </>
+  );
 }
