@@ -4,7 +4,6 @@ import { REDO_COMMAND, UNDO_COMMAND } from "lexical";
 import { tool_hover_style, tool_layout, tool_tooltip_style } from "../ToolbarPlugin/styles";
 import undo from '../../assets/undo.svg';
 import redo from '../../assets/redo.svg';
-import { useEffect } from "react";
 
 const unRedoTags = {
   undo: {
@@ -31,53 +30,53 @@ export default function UnRedoToolPlugin() {
     }
   }
 
-  useEffect(() => {
-    // 建立一個初始的編輯器狀態
-    const initialState = editor.parseEditorState(JSON.stringify({
-      "root": {
-        "children": [
-          {
-            "children": [
-              {
-                "detail": 0,
-                "format": 0,
-                "mode": "normal",
-                "style": "",
-                "text": "這是預設的文字",
-                "type": "text",
-                "version": 1
-              }
-            ],
-            "direction": "ltr",
-            "format": "",
-            "indent": 0,
-            "type": "paragraph",
-            "version": 1
-          }
-        ],
-        "direction": "ltr",
-        "format": "",
-        "indent": 0,
-        "type": "root",
-        "version": 1
-      }
-    }));
+  // useEffect(() => {
+  //   // 建立一個初始的編輯器狀態
+  //   const initialState = editor.parseEditorState(JSON.stringify({
+  //     "root": {
+  //       "children": [
+  //         {
+  //           "children": [
+  //             {
+  //               "detail": 0,
+  //               "format": 0,
+  //               "mode": "normal",
+  //               "style": "",
+  //               "text": "這是預設的文字",
+  //               "type": "text",
+  //               "version": 1
+  //             }
+  //           ],
+  //           "direction": "ltr",
+  //           "format": "",
+  //           "indent": 0,
+  //           "type": "paragraph",
+  //           "version": 1
+  //         }
+  //       ],
+  //       "direction": "ltr",
+  //       "format": "",
+  //       "indent": 0,
+  //       "type": "root",
+  //       "version": 1
+  //     }
+  //   }));
 
-    // 直接設置編輯器狀態
-    editor.setEditorState(initialState);
-  }, [editor]);
+  //   // 直接設置編輯器狀態
+  //   editor.setEditorState(initialState);
+  // }, [editor]);
 
-  useEffect(() => {
-    editor.getEditorState().read(() => {
-      // 直接輸出當前的 editor state
-      console.log('current state', editor.getEditorState().toJSON());
+  // useEffect(() => {
+  //   editor.getEditorState().read(() => {
+  //     // 直接輸出當前的 editor state
+  //     console.log('current state', editor.getEditorState().toJSON());
       
-      // 如果要解析新的狀態
-      const serializedState = editor.getEditorState().toJSON();
-      const parsedState = editor.parseEditorState(JSON.stringify(serializedState));
-      console.log('parsed state', JSON.stringify(parsedState.toJSON()));
-    });
-  }, [editor]);
+  //     // 如果要解析新的狀態
+  //     const serializedState = editor.getEditorState().toJSON();
+  //     const parsedState = editor.parseEditorState(JSON.stringify(serializedState));
+  //     console.log('parsed state', JSON.stringify(parsedState.toJSON()));
+  //   });
+  // }, [editor]);
 
   return (
     <>
