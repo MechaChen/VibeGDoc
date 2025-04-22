@@ -1,9 +1,9 @@
 import * as Y from 'yjs'
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ParagraphNode } from 'lexical';
 import { HeadingNode } from '@lexical/rich-text';
 import { ListNode, ListItemNode } from '@lexical/list';
-import { Provider } from '@lexical/yjs';
+import { Provider, ProviderAwareness } from '@lexical/yjs';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -22,6 +22,10 @@ import VersionPlugin from './components/VersionPlugin';
 import VibeGDocLogo from '/VibeGDoc.png';
 
 import './App.css'
+
+type TCorrectProviderAwareness = ProviderAwareness & {
+  clientID: number,
+}
 
 type TUserProfile = {
   name: string;
@@ -141,6 +145,7 @@ function Editor() {
   const [yjsProvider, setYjsProvider] = useState<null | Provider>(null);
   const [, setConnected] = useState(false);
   const [, setActiveUsers] = useState<TActiveUserProfile[]>([]);
+  const isLeader = useRef(false);
 
   const providerFactory = useCallback(
     (id: string, yjsDocMap: Map<string, Y.Doc>) => {
@@ -168,9 +173,16 @@ function Editor() {
     const leaderClientId = pickLeaderBySmallestClientId(
       Array.from(awareness.getStates().keys()).map(Number)
     );
+    isLeader.current = leaderClientId === (
+      awareness as TCorrectProviderAwareness
+    ).clientID;
+
+    // console.log({
+    //   awareness: awareness.getStates(),
+    //   clientId: (awareness as TCorrectProviderAwareness).clientID
+    // });
 
     const states = Array.from(awareness.getStates().values());
-
     setActiveUsers(
       states.map(
         (state) => ({
@@ -219,7 +231,7 @@ function Editor() {
         }
         ErrorBoundary={LexicalErrorBoundary}
       />
-      <VersionPlugin />
+      <VersionPlugin isLeader={isLeader.current} />
       <HistoryPlugin />
       <AutoFocusPlugin />
     </LexicalComposer>

@@ -1,19 +1,43 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { SerializedEditorState } from 'lexical';
-import { SerializedLexicalNode } from 'lexical';
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
 
-export default function VersionPlugin() {
+type TVersionPluginProps = {
+  isLeader: boolean,
+}
+
+const saveSnapshotInterval = 5000;
+
+export default function VersionPlugin(props: TVersionPluginProps) {
+  const { isLeader } = props;
   const [editor] = useLexicalComposerContext();
 
-  const [snapshot, setSnapshot] = useState<SerializedEditorState<SerializedLexicalNode> | null>(null);
+  const isTimerInit = useRef(false);
+  const timerRef = useRef<number>(NaN);
 
-  const getSnapshot = () => {
-    editor.getEditorState().read(() => {
-      console.log('snapshot', editor.getEditorState().toJSON());
-      setSnapshot(editor.getEditorState().toJSON());
-    });
-  }
-  
-  return <button onClick={getSnapshot}>Get snapshot</button>;
+  useEffect(() => {
+    if (!isLeader) return;
+
+    function getSnapshot() {
+        console.log('getSnapshot');
+        editor.getEditorState().read(() => {
+          console.log('snapshot ===>', editor.getEditorState().toJSON());
+        });
+
+        timerRef.current = setTimeout(getSnapshot, saveSnapshotInterval);
+    }
+
+    if (!isTimerInit.current) { 
+      timerRef.current = setTimeout(getSnapshot, saveSnapshotInterval);
+      isTimerInit.current = true;
+    }
+
+    return () => {
+      clearTimeout(timerRef.current);
+      timerRef.current = NaN;
+    }
+  }, [editor, isLeader]);
+
+  return (
+    <div>Version Plugin</div>
+  );
 }
