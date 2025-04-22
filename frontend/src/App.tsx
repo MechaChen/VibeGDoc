@@ -12,8 +12,8 @@ import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
 
-import { WebsocketProvider } from './lib/y-websocket'
-import { CollaborationPlugin } from './lib/@lexical/react/LexicalCollaborationPlugin';
+import { WebsocketProvider } from 'y-websocket'
+import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
 
 import ToolbarPlugin from './components/ToolbarPlugin';
 import { VibeBannerNode, VibeBannerPlugin } from './components/VibeBannerPlugin/VibeBannerPlugin';
@@ -88,6 +88,12 @@ function onError(error: Error): void {
   console.error(error);
 }
 
+function pickLeaderBySmallestClientId(clientIds: number[]): number {
+  return clientIds.reduce((leader, clientId) => {
+    return Math.min(leader, clientId);
+  });
+}
+
 function getDocFromMap(id: string, yjsDocMap: Map<string, Y.Doc>): Y.Doc {
 
   let doc = yjsDocMap.get(id);
@@ -158,6 +164,10 @@ function Editor() {
   const handleAwarenessUpdate = useCallback(() => {
     const awareness = yjsProvider!.awareness!;
 
+    const leaderClientId = pickLeaderBySmallestClientId(
+      Array.from(awareness.getStates().keys()).map(Number)
+    );
+
     const states = Array.from(awareness.getStates().values());
 
     setActiveUsers(
@@ -180,8 +190,6 @@ function Editor() {
 
     return () => yjsProvider.awareness.off('update', handleAwarenessUpdate);
   }, [yjsProvider, handleAwarenessUpdate]);
-
-
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
