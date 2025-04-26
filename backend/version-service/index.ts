@@ -2,10 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { PrismaClient } from './generated/prisma';
-// import dotenv from 'dotenv';
+import { v4 as uuidv4 } from 'uuid';
 
-// dotenv.config();
+import { PrismaClient } from './generated/prisma';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -21,34 +20,6 @@ const BUCKET_NAME = process.env.BUCKET_NAME;
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// 生成 pre-signed URL 的端點
-app.post('/presigned-url', async (req, res) => {
-  try {
-    const { documentId } = req.body;
-    if (!documentId) {
-      return res.status(400).json({ error: 'Document ID is required' });
-    }
-
-    // 生成一個唯一的文件名
-    const fileName = `${documentId}-${Date.now()}-${Math.random().toString(36).substring(2)}`;
-
-    const command = new PutObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: fileName,
-    });
-
-    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-
-    res.json({
-      presignedUrl,
-      fileName,
-    });
-  } catch (error) {
-    console.error('Error generating presigned URL:', error);
-    res.status(500).json({ error: 'Failed to generate presigned URL' });
-  }
-});
 
 // 創建文檔
 app.post('/documents', async (req, res) => {
@@ -142,6 +113,35 @@ app.get('/documents/:id/versions/:version', async (req, res) => {
   } catch (error) {
     console.error('Error fetching document version:', error);
     res.status(500).json({ error: 'Failed to fetch document version' });
+  }
+});
+
+
+// 生成 pre-signed URL 的端點
+app.post('/documents/:id/versions/presigned-url', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'Document ID is required' });
+    }
+
+    // 生成一個唯一的文件名
+    const fileName = `${id}/${uuidv4()}.json`;
+
+    const command = new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: fileName,
+    });
+
+    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+    res.json({
+      presignedUrl,
+      fileName,
+    });
+  } catch (error) {
+    console.error('Error generating presigned URL:', error);
+    res.status(500).json({ error: 'Failed to generate presigned URL' });
   }
 });
 

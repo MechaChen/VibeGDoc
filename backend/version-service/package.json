@@ -17,13 +17,14 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "latest",
-    "@aws-sdk/s3-request-presigner": "latest",
     "@aws-sdk/client-secrets-manager": "latest",
+    "@aws-sdk/s3-request-presigner": "latest",
     "@prisma/client": "^5.10.0",
     "cors": "latest",
     "dotenv": "latest",
     "express": "latest",
-    "prisma": "^5.10.0"
+    "prisma": "^5.10.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.0",
