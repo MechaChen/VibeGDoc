@@ -38,6 +38,6 @@ export default function VersionPlugin(props: TVersionPluginProps) {
   }, [editor, isLeader]);
 
   return (
-    <div>Version Plugin</div>
+    // <button onClick={getSnapshot}>Version Plugin</button>
   );
 }

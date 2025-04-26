@@ -4,26 +4,37 @@
   "description": "Version service with S3 upload and SSE support",
   "main": "index.ts",
   "type": "module",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "scripts": {
     "start": "bun index.ts",
-    "dev": "bun --watch index.ts"
+    "dev": "bun --watch index.ts",
+    "setup-db": "tsx scripts/setup-db-connection.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "latest",
     "@aws-sdk/s3-request-presigner": "latest",
+    "@aws-sdk/client-secrets-manager": "latest",
+    "@prisma/client": "^5.10.0",
     "cors": "latest",
     "dotenv": "latest",
-    "express": "latest"
+    "express": "latest",
+    "prisma": "^5.10.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.0",
     "@types/express": "^4.17.0",
     "@types/node": "^20.0.0",
     "bun-types": "latest",
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "tsx": "^4.7.1"
   },
   "private": true,
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5.0.0"
   }
 }
