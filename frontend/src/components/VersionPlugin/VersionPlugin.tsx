@@ -38,30 +38,50 @@ export default function VersionPlugin(props: TVersionPluginProps) {
     }
   }, [editor, isLeader]); 
 
+  useEffect(() => {
+    async function getVersions() {
+      const { data } = await axios.get(`http://localhost:3001/documents/${documentId}/versions`);
+      console.log('versions ===>', data);
+    }
+
+    getVersions();
+  }, [])
 
 
-  async function getSnapshot() {
+
+  async function saveSnapshot() {
     editor.getEditorState().read(async () => {
       const snapshot = editor.getEditorState().toJSON();
       
       const { data } = await axios.post(`http://localhost:3001/documents/${documentId}/versions/presigned-url`);
-      const { presignedUrl } = data;
+      const { presignedUrl, fileName } = data;
 
-      const response = await axios.put(
-        presignedUrl,
-        snapshot,
-        { 
-          headers: { 'Content-Type': 'application/json' }
-        },
-    );
-
-      console.log('response ===>', response);
+      try {
+        await axios.put(
+          presignedUrl,
+          snapshot,
+          { 
+            headers: { 'Content-Type': 'application/json' }
+          },
+        );
+  
+        await axios.post(`http://localhost:3001/documents/${documentId}/versions`, {
+          s3Key: fileName,
+        });
+        alert('Snapshot saved');
+      } catch (error) {
+        console.error('Error saving snapshot:', error);
+        alert('Error saving snapshot');
+      }
     });
   }
 
   return (
-    <button onClick={getSnapshot}>
-      Version Plugin
+    <button
+      className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer"
+      onClick={saveSnapshot}
+    >
+      Save this version
     </button>
   );
 }

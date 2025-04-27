@@ -3,8 +3,10 @@ import cors from 'cors';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
+import swaggerUi from 'swagger-ui-express';
 
 import { PrismaClient } from './generated/prisma';
+import { openApiDoc } from "./doc";
 
 const app = express();
 const prisma = new PrismaClient();
@@ -20,7 +22,7 @@ const BUCKET_NAME = process.env.BUCKET_NAME;
 // Middleware
 app.use(cors());
 app.use(express.json());
-
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiDoc));
 // 創建文檔
 app.post('/documents', async (req, res) => {
   try {

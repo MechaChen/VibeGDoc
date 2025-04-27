@@ -11,11 +11,6 @@ export class VersionServiceInfraStack extends cdk.Stack {
 
     // The code that defines your stack goes here
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'VersionServiceInfraQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
-
     // Create an S3 bucket
     new s3.Bucket(this, 'VersionServiceBucket', {
       versioned: true,
