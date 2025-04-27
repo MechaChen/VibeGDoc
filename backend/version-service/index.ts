@@ -86,49 +86,6 @@ app.get('/documents/:id/versions', async (req, res) => {
   }
 });
 
-// 支援 version 可選，沒給就抓最新
-app.get('/documents/:id/versions/:version', async (req, res) => {
-  try {
-    const { id, version } = req.params;
-    let documentVersion;
-
-    if (!version) {
-      const versionNumber = parseInt(version, 10);
-      if (isNaN(versionNumber)) {
-        return res.status(400).json({ error: 'Invalid version number' });
-      }
-      documentVersion = await prisma.version.findFirst({
-        where: { documentId: id, version: versionNumber },
-      });
-    } else {
-      documentVersion = await prisma.version.findFirst({
-        where: { documentId: id },
-        orderBy: { version: 'desc' },
-      });
-    }
-
-    if (!documentVersion) {
-      return res.status(404).json({ error: 'Document version not found' });
-    }
-
-    // 生成獲取文件的預簽名 URL
-    const command = new GetObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: documentVersion.s3Key,
-    });
-    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-
-    res.json({
-      ...documentVersion,
-      downloadUrl: presignedUrl,
-    });
-  } catch (error) {
-    console.error('Error fetching document version:', error);
-    res.status(500).json({ error: 'Failed to fetch document version' });
-  }
-});
-
-
 // 生成 pre-signed URL 的端點
 app.post('/documents/:id/versions/presigned-url', async (req, res) => {
   try {
@@ -154,6 +111,35 @@ app.post('/documents/:id/versions/presigned-url', async (req, res) => {
   } catch (error) {
     console.error('Error generating presigned URL:', error);
     res.status(500).json({ error: 'Failed to generate presigned URL' });
+  }
+});
+
+app.get('/documents/:id/versions/presigned-url', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { s3Key } = req.query;
+
+    if (!id || !s3Key) {
+      return res.status(400).json({ error: 'Document ID and s3Key are required' });
+    }
+
+    if (typeof s3Key !== 'string') {
+      return res.status(400).json({ error: 's3Key must be a string' });
+    }
+
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: s3Key,
+    });
+
+    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+    res.json({
+      presignedUrl,
+    });
+  } catch (error) {
+    console.error('Error generating presigned download URL:', error);
+    res.status(500).json({ error: 'Failed to generate presigned download URL' });
   }
 });
 

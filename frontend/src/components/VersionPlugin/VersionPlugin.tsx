@@ -6,6 +6,9 @@ import { createPortal } from 'react-dom';
 import { tool_hover_style, tool_layout, tool_tooltip_style } from '../ToolbarPlugin/styles';
 import clockHistoryIcon from '../../assets/clock-history.svg';
 import cloudUploadIcon from '../../assets/cloud-upload.svg';
+import cloudDownloadIcon from '../../assets/cloud-download.svg';
+import bouncingCirclesIcon from '../../assets/bouncing-circles.svg';
+import { serviceDomains } from '../../config/services';
 
 type TVersion = {
   id: string,
@@ -16,18 +19,70 @@ type TVersion = {
   updatedAt: string,
 }
 
+
+function Version(props: TVersion) {
+  const { id, documentId, s3Key, version, createdAt } = props;
+  const [editor] = useLexicalComposerContext();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const applyVersion = async () => {
+    setIsLoading(true);
+    const { data } = await axios.get(`${serviceDomains.version}/documents/${documentId}/versions/presigned-url?s3Key=${s3Key}`);
+    const { presignedUrl } = data;
+
+    const { data: snapshotData } = await axios.get(presignedUrl);
+    
+    const editorState = editor.parseEditorState(JSON.stringify(snapshotData));
+    editor.setEditorState(editorState);
+    setIsLoading(false);
+  }
+
+  return (
+    <div
+      key={id}
+      className="py-2 px-4 mb-2 hover:bg-gray-100 cursor-pointer relative group"
+      onClick={applyVersion}
+    >
+      <h3 className="text-lg font-bold flex items-center gap-2">
+        Version {version}
+        <img
+          src={isLoading ? bouncingCirclesIcon : cloudDownloadIcon}
+          className="w-4 h-4"
+          alt="Version"
+        />
+      </h3>
+      <p className="text-gray-500 text-sm">
+        {new Date(createdAt)
+          .toLocaleString('en-US', { 
+            month: 'long',
+            day: 'numeric', 
+            year: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: false
+          })
+        }
+      </p>
+      {/* Tooltip */}
+      <span className="absolute z-10 left-1/2 -translate-x-1/2 top-2/7 -translate-y-full px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap">
+        Insert Version {version}
+      </span>
+    </div>
+  );
+}
+
 function VersionDrawer({ open, onClose }: { open: boolean, onClose: () => void }) {
   const [versions, setVersions] = useState<TVersion[]>([]);
   
   useEffect(() => {
     async function getVersions() {
-      const { data } = await axios.get(`http://localhost:3001/documents/${documentId}/versions`);
+      const { data } = await axios.get(`${serviceDomains.version}/documents/${documentId}/versions`);
       setVersions(() => data);
     }
 
     getVersions();
 
-    const historyStream = new EventSource(`http://localhost:3001/events`);
+    const historyStream = new EventSource(`${serviceDomains.version}/events`);
 
     historyStream.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -40,6 +95,7 @@ function VersionDrawer({ open, onClose }: { open: boolean, onClose: () => void }
       historyStream.close();
     }
   }, [])
+
 
   return (
     <aside
@@ -58,17 +114,7 @@ function VersionDrawer({ open, onClose }: { open: boolean, onClose: () => void }
       </div>
       <div className="flex-1 overflow-y-auto py-2 px-2">
         {versions.map((version) => (
-          <div key={version.id} className="py-2 px-4 mb-2 hover:bg-gray-100 cursor-pointer">
-            <h3 className="text-lg font-bold">Version {version.version}</h3>
-            <p className="text-gray-500 text-sm">{new Date(version.createdAt).toLocaleString('en-US', { 
-              month: 'long',
-              day: 'numeric', 
-              year: 'numeric',
-              hour: 'numeric',
-              minute: 'numeric',
-              hour12: false
-            })}</p>
-          </div>
+          <Version key={version.id} {...version} />
         ))}
       </div>
     </aside>
@@ -89,34 +135,34 @@ export default function VersionPlugin(props: TVersionPluginProps) {
   const isTimerInit = useRef(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  useEffect(() => {
-    if (!isLeader) return;
+  // useEffect(() => {
+  //   if (!isLeader) return;
 
-    function getSnapshot() {
-      console.log('getSnapshot');
-      editor.getEditorState().read(() => {
-        console.log('snapshot ===>', editor.getEditorState().toJSON());
-      });
+  //   function getSnapshot() {
+  //     console.log('getSnapshot');
+  //     editor.getEditorState().read(() => {
+  //       console.log('snapshot ===>', editor.getEditorState().toJSON());
+  //     });
 
-      timerRef.current = setTimeout(getSnapshot, saveSnapshotInterval);
-    }
+  //     timerRef.current = setTimeout(getSnapshot, saveSnapshotInterval);
+  //   }
 
-    if (!isTimerInit.current) { 
-      timerRef.current = setTimeout(getSnapshot, saveSnapshotInterval);
-      isTimerInit.current = true;
-    }
+  //   if (!isTimerInit.current) { 
+  //     timerRef.current = setTimeout(getSnapshot, saveSnapshotInterval);
+  //     isTimerInit.current = true;
+  //   }
 
-    return () => {
-      clearTimeout(timerRef.current);
-      timerRef.current = NaN;
-    }
-  }, [editor, isLeader]); 
+  //   return () => {
+  //     clearTimeout(timerRef.current);
+  //     timerRef.current = NaN;
+  //   }
+  // }, [editor, isLeader]); 
 
   async function saveSnapshot() {
     editor.getEditorState().read(async () => {
       const snapshot = editor.getEditorState().toJSON();
       
-      const { data } = await axios.post(`http://localhost:3001/documents/${documentId}/versions/presigned-url`);
+      const { data } = await axios.post(`${serviceDomains.version}/documents/${documentId}/versions/presigned-url`);
       const { presignedUrl, fileName } = data;
 
       try {
@@ -128,7 +174,7 @@ export default function VersionPlugin(props: TVersionPluginProps) {
           },
         );
   
-        await axios.post(`http://localhost:3001/documents/${documentId}/versions`, {
+        await axios.post(`${serviceDomains.version}/documents/${documentId}/versions`, {
           s3Key: fileName,
         });
         alert('Snapshot saved');
