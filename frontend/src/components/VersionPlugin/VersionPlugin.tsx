@@ -19,14 +19,23 @@ type TVersion = {
   updatedAt: string,
 }
 
+type TVersionProps = TVersion & {
+  applyingVersionId: string | null,
+  setApplyingVersionId: (id: string | null) => void,
+}
 
-function Version(props: TVersion) {
-  const { id, documentId, s3Key, version, createdAt } = props;
+
+function Version(props: TVersionProps) {
+  const { id, documentId, s3Key, version, createdAt, applyingVersionId, setApplyingVersionId } = props;
   const [editor] = useLexicalComposerContext();
-  const [isLoading, setIsLoading] = useState(false);
+
+  const isApplyingVersion = applyingVersionId !== null;
+  const isApplyingCurVersion = applyingVersionId === id;
 
   const applyVersion = async () => {
-    setIsLoading(true);
+    if (isApplyingVersion) return;
+
+    setApplyingVersionId(id);
     const { data } = await axios.get(`${serviceDomains.version}/documents/${documentId}/versions/presigned-url?s3Key=${s3Key}`);
     const { presignedUrl } = data;
 
@@ -34,19 +43,19 @@ function Version(props: TVersion) {
     
     const editorState = editor.parseEditorState(JSON.stringify(snapshotData));
     editor.setEditorState(editorState);
-    setIsLoading(false);
+    setApplyingVersionId(null);
   }
 
   return (
     <div
       key={id}
-      className="py-2 px-4 mb-2 hover:bg-gray-100 cursor-pointer relative group"
+      className={`py-2 px-4 mb-2 relative group ${isApplyingVersion ? 'cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer'}`}
       onClick={applyVersion}
     >
       <h3 className="text-lg font-bold flex items-center gap-2">
         Version {version}
         <img
-          src={isLoading ? bouncingCirclesIcon : cloudDownloadIcon}
+          src={isApplyingCurVersion ? bouncingCirclesIcon : cloudDownloadIcon}
           className="w-4 h-4"
           alt="Version"
         />
@@ -73,6 +82,7 @@ function Version(props: TVersion) {
 
 function VersionDrawer({ open, onClose }: { open: boolean, onClose: () => void }) {
   const [versions, setVersions] = useState<TVersion[]>([]);
+  const [applyingVersionId, setApplyingVersionId] = useState<string | null>(null);
   
   useEffect(() => {
     async function getVersions() {
@@ -114,7 +124,12 @@ function VersionDrawer({ open, onClose }: { open: boolean, onClose: () => void }
       </div>
       <div className="flex-1 overflow-y-auto py-2 px-2">
         {versions.map((version) => (
-          <Version key={version.id} {...version} />
+          <Version
+            key={version.id}
+            {...version}
+            applyingVersionId={applyingVersionId}
+            setApplyingVersionId={setApplyingVersionId}
+          />
         ))}
       </div>
     </aside>

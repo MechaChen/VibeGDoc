@@ -1,6 +1,6 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $setBlocksType } from '@lexical/selection';
-import type { EditorConfig, LexicalNode } from 'lexical';
+import type { EditorConfig, LexicalNode, SerializedLexicalNode } from 'lexical';
 import {
   $createParagraphNode,
   $getSelection,
@@ -13,6 +13,13 @@ import {
   INSERT_PARAGRAPH_COMMAND,
   KEY_ENTER_COMMAND,
 } from 'lexical';
+
+export type SerializedVibeBannerNode = {
+  type: 'vibe-banner';
+  version: 1;
+  // 你的自訂屬性
+  text: string;
+} & SerializedLexicalNode;
 
 export class VibeBannerNode extends ElementNode {
   static getType() {
@@ -31,27 +38,33 @@ export class VibeBannerNode extends ElementNode {
 		return element;
 	}
 
-    insertNewAfter(): null | ElementNode {
-        const newBlock = $createParagraphNode();
-        const direction = this.getDirection();
-        newBlock.setDirection(direction);
-        this.insertAfter(newBlock);
-        return newBlock;
-    }
+  insertNewAfter(): null | ElementNode {
+      const newBlock = $createParagraphNode();
+      const direction = this.getDirection();
+      newBlock.setDirection(direction);
+      this.insertAfter(newBlock);
+      return newBlock;
+  }
 
-    collapseAtStart() {
-        const paragraph = $createParagraphNode();
-        const children = this.getChildren();
-        children.forEach((child) => {
-            paragraph.append(child);
-        });
-        this.replace(paragraph);
-        return true;
-    }
+  collapseAtStart() {
+      const paragraph = $createParagraphNode();
+      const children = this.getChildren();
+      children.forEach((child) => {
+          paragraph.append(child);
+      });
+      this.replace(paragraph);
+      return true;
+  }
 
-    updateDOM() {
-        return false;
-    }
+  updateDOM() {
+      return false;
+  }
+
+  static importJSON(serializedNode: SerializedVibeBannerNode): VibeBannerNode {
+      const node = new VibeBannerNode(serializedNode.text);
+      // ...還原其他屬性
+      return node;
+  }
 }
 
 export function $createVibeBannerNode(): VibeBannerNode {
