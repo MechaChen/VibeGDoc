@@ -231,7 +231,7 @@ function Editor() {
         }
         ErrorBoundary={LexicalErrorBoundary}
       />
-      <VersionPlugin isLeader={isLeader.current} />
+      {/* <VersionPlugin isLeader={isLeader.current} /> */}
       <HistoryPlugin />
       <AutoFocusPlugin />
     </LexicalComposer>

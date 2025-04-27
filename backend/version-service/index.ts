@@ -23,6 +23,7 @@ const BUCKET_NAME = process.env.BUCKET_NAME;
 app.use(cors());
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiDoc));
+
 // 創建文檔
 app.post('/documents', async (req, res) => {
   try {
@@ -85,16 +86,26 @@ app.get('/documents/:id/versions', async (req, res) => {
   }
 });
 
-// 獲取特定版本的文檔
+// 支援 version 可選，沒給就抓最新
 app.get('/documents/:id/versions/:version', async (req, res) => {
   try {
     const { id, version } = req.params;
-    const documentVersion = await prisma.version.findFirst({
-      where: {
-        documentId: id,
-        version: parseInt(version),
-      },
-    });
+    let documentVersion;
+
+    if (!version) {
+      const versionNumber = parseInt(version, 10);
+      if (isNaN(versionNumber)) {
+        return res.status(400).json({ error: 'Invalid version number' });
+      }
+      documentVersion = await prisma.version.findFirst({
+        where: { documentId: id, version: versionNumber },
+      });
+    } else {
+      documentVersion = await prisma.version.findFirst({
+        where: { documentId: id },
+        orderBy: { version: 'desc' },
+      });
+    }
 
     if (!documentVersion) {
       return res.status(404).json({ error: 'Document version not found' });
@@ -105,7 +116,6 @@ app.get('/documents/:id/versions/:version', async (req, res) => {
       Bucket: BUCKET_NAME,
       Key: documentVersion.s3Key,
     });
-
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
 
     res.json({
@@ -147,6 +157,35 @@ app.post('/documents/:id/versions/presigned-url', async (req, res) => {
   }
 });
 
+// 1. 全域 clients 陣列
+const clients: any[] = [];
+
+// 2. SSE endpoint
+app.get('/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  clients.push(res);
+
+  res.write('data: {"status": "connected"}\n\n');
+
+  req.on('close', () => {
+    clients.splice(clients.indexOf(res), 1);
+  });
+});
+
+// 3. 廣播 function
+function broadcastVersionSaved(documentId: string, version: any) {
+  const payload = JSON.stringify({ type: 'version_saved', documentId, version });
+  clients.forEach(res => {
+    if (typeof res.write === 'function') {
+      res.write(`data: ${payload}\n\n`);
+    }
+  });
+}
+
 // 創建文檔版本
 app.post('/documents/:id/versions', async (req, res) => {
   try {
@@ -172,6 +211,7 @@ app.post('/documents/:id/versions', async (req, res) => {
       },
     });
 
+    broadcastVersionSaved(id, newVersion);
     res.json(newVersion);
   } catch (error) {
     console.error('Error creating new document version:', error);
@@ -182,27 +222,6 @@ app.post('/documents/:id/versions', async (req, res) => {
 // 健康檢查端點
 app.get('/health', (_, res) => {
   res.json({ status: 'healthy' });
-});
-
-// 設置 SSE 端點
-app.get('/events', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-
-  // 發送初始消息
-  res.write('data: {"status": "connected"}\n\n');
-
-  // 定期發送心跳
-  const heartbeat = setInterval(() => {
-    res.write('data: {"type": "heartbeat"}\n\n');
-  }, 30000);
-
-  // 處理客戶端斷開連接
-  req.on('close', () => {
-    clearInterval(heartbeat);
-    console.log('Client disconnected');
-  });
 });
 
 const PORT = process.env.PORT || 3001;
