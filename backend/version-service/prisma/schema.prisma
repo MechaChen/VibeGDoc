@@ -31,6 +31,7 @@ model Version {
   version     Int      @default(1)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  diff        String?  // 版本間的差異
 
   @@unique([documentId, version]) // 確保每個文件的每個版本都是唯一的
 }

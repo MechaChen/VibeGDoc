@@ -90,6 +90,29 @@ app.post("/voice-to-text", upload.single('audio'), async (req, res): Promise<voi
     }
 });
 
+app.post("/summarize-version-diff", async (req, res) => {
+    const { prevVersion, curVersion } = req.body;
+
+    const summary = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+            {
+                role: "user",
+                content: `Compare the two text versions and describe the main difference.
+                    ⚠️ Limit the output to at most 10 English words.
+                    ⚠️ Only output the difference itself, no explanations, no full sentences, no extra context.
+                    Previous version: ${prevVersion}
+                    Current version: ${curVersion}
+                `,
+            },
+        ],
+        // a sentence is approximately 20 tokens
+        max_tokens: 10,
+    });
+
+    res.send(summary.choices[0]?.message.content);
+});
+
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
 });

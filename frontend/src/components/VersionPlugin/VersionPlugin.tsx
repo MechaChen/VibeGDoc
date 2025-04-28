@@ -1,5 +1,5 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -9,6 +9,8 @@ import cloudUploadIcon from '../../assets/cloud-upload.svg';
 import cloudDownloadIcon from '../../assets/cloud-download.svg';
 import bouncingCirclesIcon from '../../assets/bouncing-circles.svg';
 import { serviceDomains } from '../../config/services';
+import { SerializedEditorState } from 'lexical';
+import { SerializedLexicalNode } from 'lexical';
 
 type TVersion = {
   id: string,
@@ -22,6 +24,12 @@ type TVersion = {
 type TVersionProps = TVersion & {
   applyingVersionId: string | null,
   setApplyingVersionId: (id: string | null) => void,
+}
+
+type TUploadData = {
+  presignedUrl: string,
+  snapshot: string,
+  fileName: string,
 }
 
 
@@ -171,32 +179,49 @@ export default function VersionPlugin(props: TVersionPluginProps) {
   //     clearTimeout(timerRef.current);
   //     timerRef.current = NaN;
   //   }
-  // }, [editor, isLeader]); 
+  // }, [editor, isLeader]);
 
-  async function saveSnapshot() {
-    editor.getEditorState().read(async () => {
+  async function genUploadUrl(snapshot: SerializedEditorState<SerializedLexicalNode>): Promise<TUploadData> {
+    const { data } = await axios.post(
+      `${serviceDomains.version}/documents/${documentId}/versions/presigned-url`,
+    );
+    return { snapshot, ...data };
+  }
+
+  async function uploadSnapshot(uploadData: TUploadData) {
+    const { presignedUrl, snapshot } = uploadData;
+    await axios.put(
+      presignedUrl,
+      snapshot,
+      { 
+        headers: { 'Content-Type': 'application/json' }
+      },
+    );
+    return uploadData;
+  }
+
+  async function uploadMetadata(uploadData: TUploadData) {
+    const { fileName } = uploadData;
+    await axios.post(
+      `${serviceDomains.version}/documents/${documentId}/versions`,
+      {
+        s3Key: fileName,
+      },
+    );
+  }
+
+  function saveSnapshot() {
+    editor.getEditorState().read(() => {
       const snapshot = editor.getEditorState().toJSON();
-      
-      const { data } = await axios.post(`${serviceDomains.version}/documents/${documentId}/versions/presigned-url`);
-      const { presignedUrl, fileName } = data;
 
-      try {
-        await axios.put(
-          presignedUrl,
-          snapshot,
-          { 
-            headers: { 'Content-Type': 'application/json' }
-          },
-        );
-  
-        await axios.post(`${serviceDomains.version}/documents/${documentId}/versions`, {
-          s3Key: fileName,
+      genUploadUrl(snapshot)
+        .then(uploadSnapshot)
+        .then(uploadMetadata)
+        .then(() => alert('Snapshot saved'))
+        .catch((error) => {
+          console.error('Error saving snapshot:', error);
+          alert('Error saving snapshot');
         });
-        alert('Snapshot saved');
-      } catch (error) {
-        console.error('Error saving snapshot:', error);
-        alert('Error saving snapshot');
-      }
     });
   }
 
