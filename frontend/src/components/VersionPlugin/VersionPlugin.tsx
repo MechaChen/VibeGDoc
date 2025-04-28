@@ -1,5 +1,5 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -19,6 +19,7 @@ type TVersion = {
   version: number,
   createdAt: string,
   updatedAt: string,
+  diff: string,
 }
 
 type TVersionProps = TVersion & {
@@ -34,7 +35,7 @@ type TUploadData = {
 
 
 function Version(props: TVersionProps) {
-  const { id, documentId, s3Key, version, createdAt, applyingVersionId, setApplyingVersionId } = props;
+  const { id, documentId, s3Key, version, createdAt, applyingVersionId, setApplyingVersionId, diff } = props;
   const [editor] = useLexicalComposerContext();
 
   const isApplyingVersion = applyingVersionId !== null;
@@ -60,26 +61,34 @@ function Version(props: TVersionProps) {
       className={`py-2 px-4 mb-2 relative group ${isApplyingVersion ? 'cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer'}`}
       onClick={applyVersion}
     >
-      <h3 className="text-lg font-bold flex items-center gap-2">
-        Version {version}
-        <img
-          src={isApplyingCurVersion ? bouncingCirclesIcon : cloudDownloadIcon}
-          className="w-4 h-4"
-          alt="Version"
-        />
-      </h3>
-      <p className="text-gray-500 text-sm">
-        {new Date(createdAt)
-          .toLocaleString('en-US', { 
-            month: 'long',
-            day: 'numeric', 
-            year: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: false
-          })
-        }
-      </p>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-bold flex items-center gap-2">
+          Version {version}
+          <img
+            src={isApplyingCurVersion ? bouncingCirclesIcon : cloudDownloadIcon}
+            className="w-4 h-4"
+            alt="Version"
+          />
+        </h3>
+        <p className="text-gray-500 text-sm">
+          {new Date(createdAt)
+            .toLocaleString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+              hour: 'numeric',
+              minute: 'numeric',
+              hour12: false
+            })
+          }
+        </p>
+      </div>
+      {diff && (
+        <div className="bg-gray-100 rounded-md p-2 py-1 mt-1 text-gray-700 text-[0.95em]">
+          <span>Changes:</span>
+          <span className="ml-2 font-bold text-blue-600">{diff}</span>
+        </div>
+      )}
       {/* Tooltip */}
       <span className="absolute z-10 left-1/2 -translate-x-1/2 top-2/7 -translate-y-full px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap">
         Insert Version {version}
@@ -144,42 +153,10 @@ function VersionDrawer({ open, onClose }: { open: boolean, onClose: () => void }
   );
 }
 
-type TVersionPluginProps = {
-  isLeader?: boolean,
-}
-
-const saveSnapshotInterval = 5000;
-const documentId = '4d6e7257-8f78-4a4f-99ea-eb5fe151af8d';
-
-export default function VersionPlugin(props: TVersionPluginProps) {
-  const { isLeader } = props;
+function SaveVersionAction() {
   const [editor] = useLexicalComposerContext();
-  const timerRef = useRef<number>(NaN);
-  const isTimerInit = useRef(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // useEffect(() => {
-  //   if (!isLeader) return;
-
-  //   function getSnapshot() {
-  //     console.log('getSnapshot');
-  //     editor.getEditorState().read(() => {
-  //       console.log('snapshot ===>', editor.getEditorState().toJSON());
-  //     });
-
-  //     timerRef.current = setTimeout(getSnapshot, saveSnapshotInterval);
-  //   }
-
-  //   if (!isTimerInit.current) { 
-  //     timerRef.current = setTimeout(getSnapshot, saveSnapshotInterval);
-  //     isTimerInit.current = true;
-  //   }
-
-  //   return () => {
-  //     clearTimeout(timerRef.current);
-  //     timerRef.current = NaN;
-  //   }
-  // }, [editor, isLeader]);
+  const [isSaving, setIsSaving] = useState(false);
 
   async function genUploadUrl(snapshot: SerializedEditorState<SerializedLexicalNode>): Promise<TUploadData> {
     const { data } = await axios.post(
@@ -214,6 +191,7 @@ export default function VersionPlugin(props: TVersionPluginProps) {
     editor.getEditorState().read(() => {
       const snapshot = editor.getEditorState().toJSON();
 
+      setIsSaving(true);
       genUploadUrl(snapshot)
         .then(uploadSnapshot)
         .then(uploadMetadata)
@@ -221,18 +199,60 @@ export default function VersionPlugin(props: TVersionPluginProps) {
         .catch((error) => {
           console.error('Error saving snapshot:', error);
           alert('Error saving snapshot');
-        });
+        })
+        .finally(() => setIsSaving(false));
     });
   }
 
   return (
+    <button className={`group ${tool_layout} ${tool_hover_style}`} onClick={saveSnapshot}>
+      <img src={isSaving ? bouncingCirclesIcon : cloudUploadIcon} alt="Version" className="w-full" />
+      <div className={tool_tooltip_style}>
+        Save snapshot
+      </div>
+    </button>
+  );
+}
+
+type TVersionPluginProps = {
+  isLeader?: boolean,
+}
+
+const saveSnapshotInterval = 5000;
+const documentId = '4d6e7257-8f78-4a4f-99ea-eb5fe151af8d';
+
+export default function VersionPlugin(props: TVersionPluginProps) {
+  const { isLeader } = props;
+  const timerRef = useRef<number>(NaN);
+  const isTimerInit = useRef(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // useEffect(() => {
+  //   if (!isLeader) return;
+
+  //   function getSnapshot() {
+  //     console.log('getSnapshot');
+  //     editor.getEditorState().read(() => {
+  //       console.log('snapshot ===>', editor.getEditorState().toJSON());
+  //     });
+
+  //     timerRef.current = setTimeout(getSnapshot, saveSnapshotInterval);
+  //   }
+
+  //   if (!isTimerInit.current) { 
+  //     timerRef.current = setTimeout(getSnapshot, saveSnapshotInterval);
+  //     isTimerInit.current = true;
+  //   }
+
+  //   return () => {
+  //     clearTimeout(timerRef.current);
+  //     timerRef.current = NaN;
+  //   }
+  // }, [editor, isLeader]);
+
+  return (
     <>
-      <button className={`group ${tool_layout} ${tool_hover_style}`} onClick={saveSnapshot}>
-        <img src={cloudUploadIcon} alt="Version" className="w-full" />
-        <div className={tool_tooltip_style}>
-          Save snapshot
-        </div>
-      </button>
+      <SaveVersionAction />
       <button
         className={`group ${tool_layout} ${tool_hover_style}`}
         onClick={() => setDrawerOpen(!drawerOpen)}

@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import axios from 'axios';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
@@ -183,17 +184,41 @@ app.post('/documents/:id/versions', async (req, res) => {
     }
 
     // 獲取當前最高版本
-    const currentVersion = await prisma.version.findFirst({
+    const prevVersion = await prisma.version.findFirst({
       where: { documentId: id },
       orderBy: { version: 'desc' },
     });
+    const prevS3Key = prevVersion?.s3Key;
+
+    let versionDiffSummary = '';
+
+    if (prevVersion) {
+      const prevContent = await s3Client.send(new GetObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: prevS3Key,
+        }))
+        .then(response => response.Body?.transformToString());
+
+      const curContent = await s3Client.send(new GetObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: s3Key,
+      }))
+      .then(response => response.Body?.transformToString());
+      
+      const response = await axios.post("http://localhost:3000/summarize-version-diff", {
+        prevVersion: prevContent,
+        curVersion: curContent,
+      })
+      versionDiffSummary = response.data;
+    }
 
     // 創建新版本
     const newVersion = await prisma.version.create({
       data: {
         documentId: id,
         s3Key,
-        version: currentVersion ? currentVersion.version + 1 : 1,
+        version: prevVersion ? prevVersion.version + 1 : 1,
+        diff: versionDiffSummary,
       },
     });
 
