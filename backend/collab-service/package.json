@@ -5,6 +5,7 @@
     "collab-service": "bin/collab-service.js"
   },
   "scripts": {
+    "dev": "HOST=localhost PORT=1234 bunx y-websocket",
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
