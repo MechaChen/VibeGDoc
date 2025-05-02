@@ -69,13 +69,13 @@
 .PlaygroundEditorTheme__listItemChecked:before {
   border: 1px solid rgb(61, 135, 245);
   border-radius: 2px;
-  background-color: #3d87f5;
+  background-color: transparent;
   background-repeat: no-repeat;
 }
 .PlaygroundEditorTheme__listItemChecked:after {
   content: '';
   cursor: pointer;
-  border-color: #fff;
+  border-color: rgb(61, 135, 245);
   border-style: solid;
   position: absolute;
   display: block;
