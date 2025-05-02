@@ -10,6 +10,7 @@ import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
 import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
 
 import { WebsocketProvider } from 'y-websocket'
@@ -52,6 +53,9 @@ const theme = {
   list: {
     ol: 'list-decimal ml-8',    // 有序列表的樣式
     ul: 'list-disc ml-8',       // 無序列表的樣式
+    checklist: 'PlaygroundEditorTheme__checklist',
+    listitemChecked: 'PlaygroundEditorTheme__listItemChecked',
+    listitemUnchecked: 'PlaygroundEditorTheme__listItemUnchecked',
   },
   vibeBanner: 'py-2 px-4 text-black rounded-xl vibe-shadow',
   // ... 其他樣式
@@ -208,6 +212,7 @@ function Editor() {
     <LexicalComposer initialConfig={initialConfig}>
       <ToolbarPlugin />
       <ListPlugin />
+      <CheckListPlugin />
       <VibeBannerPlugin />
       <GhostTextPlugin />
       <CollaborationPlugin
