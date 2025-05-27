@@ -3,7 +3,7 @@ An AI-powered collaborative editor for vibe-driven writing, featuring:
 - ✍️ AI-assisted autocomplete
 - 🎙️ Voice recognition
 - 🧭 History different summarize
-- 📅 Google calendar integration by AI
+- 📅 MCP to integrate AI with Google Calendar
 
 &nbsp;&nbsp;
 
