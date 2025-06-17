@@ -1,9 +1,8 @@
 # VibeGDoc
 An AI-powered collaborative editor for vibe-driven writing, featuring:
 - ✍️ AI-assisted autocomplete
-- 🎙️ AI Voice to Text recognition
-- 🧭 AI Version change summarize
-- 📅 Google calendar integration by MCP
+- 🎙️ AI Voice-to-text recognition
+- 🧭 AI-driven version change summarization
 
 &nbsp;&nbsp;
 
@@ -21,17 +20,17 @@ Demo :
 
 | Component | Feature | Description |
 |-----------|---------|-------------|
-| 🌐 Frontend | Smart Hint | hint AI-assisted autocomplete for current context, connecting to current cursor position |
-| 🖥️ Backend | OpenAI Text API | use OpenAI `gpt-4o-mini` model to generate following text according to context |
+| 🌐 Frontend | AI Smart Hint | Provides AI-assisted autocomplete suggestions based on the current cursor context |
+| 🖥️ Backend | AI Predictive Text Generation | Uses OpenAI’s gpt-4o-mini to generate next-step content from current context |
 
 &nbsp;
 
-### Core Functionality
+### Core Functionalities
 
 | Component | Feature | Description |
 |-----------|---------|-------------|
-| 🌐 Frontend | Rich text editor | able to insert format text, like headings, list, and custom banner |
-| 🌐 Frontend | Undo / Redo | able to undo / redo to previous steps locally  | 
+| 🌐 Frontend | Rich text editor | Supports formatted content including headings, lists, and custom banners |
+| 🌐 Frontend | Undo / Redo | Supports local undo and redo history  | 
 
 
 &nbsp;&nbsp;
@@ -48,73 +47,46 @@ https://github.com/user-attachments/assets/5b0f88b1-6cfe-4019-a8a9-8db1bba6ff6b
 
 | Component | Feature | Description |
 | --- | ----------------------- | ------------------------------------------------------------------------- |
-| 🌐 Frontend | AI Voice to text | Insert voice-to-text result directly into Lexical document, synced by Yjs |
-| 🖥️ Backend | Voice Processing | Process audio input and convert to text using OpenAI Whisper |
+| 🌐 Frontend | AI Voice to text | Converts speech to text and inserts it directly into the document  |
+| 🌐 Frontend | Voice recording animation | Displays wave animation while the user is speaking |  
+| 🖥️ Backend | Voice Processing | Converts `.webm` audio to `.wav` via `ffmpeg`, then transcribes with OpenAI Whisper |
 
 &nbsp;
 
-### Core Functionality
-
-🌐 Frontend (Lexical + Yjs)
+### Core Functionalities
 
 | Component | Feature | Description |
 | ---- | ----------------------- | ------------------------------------------------------------------------- |
-| 🌐 Frontend | Empower collaboration by integrate Yjs CRDT | Use `@lexical/yjs` plugin |
-| 🌐 Frontend | WebSocket Provider | Connect via `y-websocket` client to sync server |
-| 🖥️ Backend | Run y-websocket server | Set up minimum y-WebSocket to handle real-time CDRT collaboration |
-| 🖥️ Backend | Run y-websocket on EC2 | Run y-websocket server on EC2 on AWS Cloud |
-| 🖥️ Backend | Load Balancer Support | Balance clients across servers and sync updates consistently |
+| 🌐 Frontend | Real-time Collaboration via Yjs | Uses @lexical/yjs plugin for CRDT-based collaboration |
+| 🖥️ Backend | Run y-websocket server | Hosts a minimal y-websocket server to support collaboration |
+| 🖥️ Backend | Run y-websocket on EC2 | Runs collaboration server on AWS EC2 instance |
+| 🖥️ Backend | Load Balancer Support | Ensures consistent updates across multiple clients and servers |
 
 
 &nbsp;&nbsp;&nbsp;
 
-## Phase 2 — Basic Scalable Collaboration Protocol
 
-### Frontend & Backend Task Breakdown
+## Phase 2 — Version & Snapshot
 
-🌐 Frontend (React)
+### AI Functionality
 
-| Feature            | Description                                               |
-| ------------------ | --------------------------------------------------------- |
-| Local buffer queue | Queue unsent operations locally                           |
-| requestId + ACK    | Track each op via ID, clear when ACK received from server |
-| In-flight control  | Limit one pending edit at a time                          |
-| MCP Apply → Buffer | Add operation into buffer on apply                        |
+| Component | Feature | Description |
+| --- | ----------------------- | ------------------------------------------------------------------------- |
+| 🌐 Frontend | AI Version Summary | Displays a summary comparing the current and previous versions |
+| 🖥️ Backend | AI Snapshot Comparison | Uses OpenAI gpt-4o-mini to generate summaries based on version diffs |
+
 
 &nbsp;
 
-🖥️ Backend (Node.js + Custom WebSocket Server)
+### Core Functionalities
 
-| Feature                   | Description                                   |
-| ------------------------- | --------------------------------------------- |
-| Receive op with requestId | Handle operation payloads with metadata       |
-| Send ACK                  | Return `{ type: 'ack', requestId }` to client |
-| Preserve order            | Ensure operation sequence is consistent       |
-| Optional storage          | Log ops in Redis or DB for replay/debugging   |
-
-&nbsp;&nbsp;
-
-## Phase 3 — Persistence, History & Reconnect Support
-
-### Frontend & Backend Task Breakdown
-
-🌐 Frontend (React)
-
-| Feature           | Description                                       |
-| ----------------- | ------------------------------------------------- |
-| IndexedDB caching | Use `y-indexeddb` to store offline state/snapshot |
-| Snapshot UI       | Allow switching between snapshot versions         |
-| Autosave          | Periodically upload Yjs snapshot to backend       |
-
-&nbsp;
-
-🖥️ Backend (Node.js + AWS)
-
-| Feature           | Description                                         |
-| ----------------- | --------------------------------------------------- |
-| Snapshot API      | `GET/POST /snapshots/:docId` to save/load snapshots |
-| Snapshot Storage  | Store in S3 / DynamoDB / RDS                        |
-| Metadata Tracking | Save version info like time, user, description      |
+| Component | Feature | Description |
+|-----------|---------|-------------|
+| 🌐 Frontend | Version Drawer UI | Interface for viewing and navigating saved versions |
+| 🌐 Frontend | Save Version | Allows users to save a snapshot of the current document |
+| 🖥️ Backend | Store snapshots | Encodes and stores snapshots in static object storage (e.g. S3)  | 
+| 🖥️ Backend | Store Metadata | Saves version metadata to a SQL database  | 
+| 🖥️ Backend | Retrieve Version | Retrieves a specific version snapshot from the S3 bucket  | 
 
 
 &nbsp;
