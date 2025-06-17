@@ -1,15 +1,13 @@
 # VibeGDoc
 An AI-powered collaborative editor for vibe-driven writing, featuring:
 - ✍️ AI-assisted autocomplete
-- 🎙️ Voice recognition
-- 🧭 History different summarize
-- 📅 MCP to integrate AI with Google Calendar
+- 🎙️ AI Voice to Text recognition
+- 🧭 AI Version change summarize
+- 📅 Google calendar integration by MCP
 
 &nbsp;&nbsp;
 
 ## Phase 0 — Single-User AI Editor
-
-### Frontend & Backend Task Breakdown
 
 Demo :
 
@@ -17,32 +15,28 @@ Demo :
 
 &nbsp;
 
-🌐 Frontend (React + Lexical)
+## Features
 
-| Feature               | Description                                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------------------- |
-| Set up Lexical editor | Initialize LexicalEditor with EditorComposer and plugins                                          |
-| Smart Hint            | Render suggestions near caret with `createPortal()`, apply text on Tab press                      |
-| AI Toolbar            | Show toolbar on text selection to trigger Rephrase / Fix / Summarize via OpenAI and insert result |
-| Voice Input           | Convert speech to text using Web Speech API, insert via `editor.update(() => insertText)`         |
-| MCP Plugin            | AI side panel, apply result with custom command to insert text                                    |
+### AI Functionality
+
+| Component | Feature | Description |
+|-----------|---------|-------------|
+| 🌐 Frontend | Smart Hint | hint AI-assisted autocomplete for current context, connecting to current cursor position |
+| 🖥️ Backend | OpenAI Text API | use OpenAI `gpt-4o-mini` model to generate following text according to context |
 
 &nbsp;
 
-🖥️ Backend (Node.js + AWS Lambda optional)
+### Core Functionality
 
-| Feature          | Description                                                  |
-| ---------------- | ------------------------------------------------------------ |
-| OpenAI Proxy API | Proxy endpoint for calling OpenAI securely and logging usage |
-| Hosting          | Host via EC2 / Lambda + API Gateway / Vercel                 |
-
+| Component | Feature | Description |
+|-----------|---------|-------------|
+| 🌐 Frontend | Rich text editor | able to insert format text, like headings, list, and custom banner |
+| 🌐 Frontend | Undo / Redo | able to undo / redo to previous steps locally  | 
 
 
 &nbsp;&nbsp;
 
 ## Phase 1 — Add Real-Time Collaboration
-
-### Frontend & Backend Task Breakdown (Redis + Multi-Server Architecture)
 
 Demo :
 
@@ -50,27 +44,29 @@ https://github.com/user-attachments/assets/5b0f88b1-6cfe-4019-a8a9-8db1bba6ff6b
 
 &nbsp;
 
-🌐 Frontend (Lexical + Yjs)
+### AI Functionality
 
-| Feature                 | Description                                                               |
-| ----------------------- | ------------------------------------------------------------------------- |
-| Integrate Yjs + Lexical | Use `@lexical/yjs` provider                                               |
-| WebSocket Provider      | Connect via `y-websocket` client to sync server                           |
-| Awareness               | Show collaborator cursor, name, color via Yjs awareness                   |
-| Voice AI Insert         | Insert voice-to-text result directly into Lexical document, synced by Yjs |
+| Component | Feature | Description |
+| --- | ----------------------- | ------------------------------------------------------------------------- |
+| 🌐 Frontend | AI Voice to text | Insert voice-to-text result directly into Lexical document, synced by Yjs |
+| 🖥️ Backend | Voice Processing | Process audio input and convert to text using OpenAI Whisper |
 
 &nbsp;
 
-🖥️ Backend (Node.js + WebSocket + Redis)
+### Core Functionality
 
-| Feature                | Description                                                           |
-| ---------------------- | --------------------------------------------------------------------- |
-| Run y-websocket server | Set up WebSocket sync with room separation                            |
-| One Y.Doc per document | Each room corresponds to one shared document state                    |
-| Redis Pub/Sub          | Sync updates between servers (use official y-websocket Redis adapter) |
-| Load Balancer Support  | Balance clients across servers and sync updates consistently          |
+🌐 Frontend (Lexical + Yjs)
 
-&nbsp;&nbsp;;&nbsp;
+| Component | Feature | Description |
+| ---- | ----------------------- | ------------------------------------------------------------------------- |
+| 🌐 Frontend | Empower collaboration by integrate Yjs CRDT | Use `@lexical/yjs` plugin |
+| 🌐 Frontend | WebSocket Provider | Connect via `y-websocket` client to sync server |
+| 🖥️ Backend | Run y-websocket server | Set up minimum y-WebSocket to handle real-time CDRT collaboration |
+| 🖥️ Backend | Run y-websocket on EC2 | Run y-websocket server on EC2 on AWS Cloud |
+| 🖥️ Backend | Load Balancer Support | Balance clients across servers and sync updates consistently |
+
+
+&nbsp;&nbsp;&nbsp;
 
 ## Phase 2 — Basic Scalable Collaboration Protocol
 
