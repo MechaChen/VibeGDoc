@@ -23,7 +23,6 @@ Demo :
 | 🌐 Frontend | AI Smart Hint | Provides AI-assisted autocomplete suggestions based on the current cursor context |
 | 🖥️ Backend | AI Predictive Text Generation | Uses OpenAI’s gpt-4o-mini to generate next-step content from current context |
 
-&nbsp;
 
 ### Core Functionalities
 
@@ -33,7 +32,7 @@ Demo :
 | 🌐 Frontend | Undo / Redo | Supports local undo and redo history  | 
 
 
-&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;
 
 ## Phase 1 — Add Real-Time Collaboration
 
@@ -51,7 +50,6 @@ https://github.com/user-attachments/assets/5b0f88b1-6cfe-4019-a8a9-8db1bba6ff6b
 | 🌐 Frontend | Voice recording animation | Displays wave animation while the user is speaking |  
 | 🖥️ Backend | Voice Processing | Converts `.webm` audio to `.wav` via `ffmpeg`, then transcribes with OpenAI Whisper |
 
-&nbsp;
 
 ### Core Functionalities
 
@@ -75,8 +73,6 @@ https://github.com/user-attachments/assets/5b0f88b1-6cfe-4019-a8a9-8db1bba6ff6b
 | 🌐 Frontend | AI Version Summary | Displays a summary comparing the current and previous versions |
 | 🖥️ Backend | AI Snapshot Comparison | Uses OpenAI gpt-4o-mini to generate summaries based on version diffs |
 
-
-&nbsp;
 
 ### Core Functionalities
 
