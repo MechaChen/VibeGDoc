@@ -73,6 +73,12 @@ https://github.com/user-attachments/assets/5b0f88b1-6cfe-4019-a8a9-8db1bba6ff6b
 
 ## Phase 2 — Version & Snapshot
 
+Demo: 
+
+https://github.com/user-attachments/assets/066c6043-9580-4f77-9912-4da0c5e771c9
+
+&nbsp;
+
 ### AI Functionality
 
 | Component | Feature | Description |
