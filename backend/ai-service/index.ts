@@ -140,11 +140,11 @@ app.post('/mcp-init', async (req, res) => {
     }
 });
 
-// app.post('/mcp-chat', async (req, res) => {
-//     const { message } = req.body;
-//     const response = await mcpClient.chat(message);
-//     res.json({ response });
-// });
+app.post('/mcp-chat', async (req, res) => {
+    const { query } = req.body;
+    const response = await mcpClient.chat(query);
+    res.json({ response });
+});
 
 app.listen(3000, () => {
     console.log("Server is running on port 3000");

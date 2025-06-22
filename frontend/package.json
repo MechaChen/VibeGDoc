@@ -14,6 +14,7 @@
     "@lexical/react": "^0.29.0",
     "@lexical/selection": "^0.29.0",
     "@tailwindcss/vite": "^4.0.17",
+    "@uiw/react-markdown-preview": "^5.1.4",
     "axios": "^1.9.0",
     "lexical": "^0.29.0",
     "lib0": "^0.2.104",
