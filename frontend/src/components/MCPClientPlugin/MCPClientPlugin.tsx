@@ -2,6 +2,10 @@ import React, { useState, useEffect, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import axios from "axios";
 import MarkdownPreview from '@uiw/react-markdown-preview';
+import { $generateNodesFromDOM } from "@lexical/html";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { marked } from "marked";
+import { $createParagraphNode, $getRoot } from "lexical";
 
 import mcpClientIcon from "../../assets/mcp.png";
 import bouncingCirclesWhiteIcon from "../../assets/bouncing-circles-white.svg";
@@ -231,6 +235,7 @@ const ChatWithMCPServer = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editor] = useLexicalComposerContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -282,6 +287,17 @@ const ChatWithMCPServer = () => {
     return acc;
   }, []);
 
+  const handleInsertContent = async (markdownContent: string) => {
+    const html = await marked.parse(markdownContent);
+    const parser = new DOMParser();
+    const dom = parser.parseFromString(html, "text/html");
+    editor.update(() => {
+      const nodes = $generateNodesFromDOM(editor, dom);
+      $getRoot().append(...nodes, $createParagraphNode());
+    });
+    editor.focus();
+  };
+
   return (
     <div className="flex flex-col flex-grow">
       <h3 className="text-lg font-bold text-gray-900 pb-6">
@@ -307,16 +323,30 @@ const ChatWithMCPServer = () => {
                 {group.map((msg) => {
                   if (msg.content.type === "text") {
                     return (
-                      <div
-                        key={msg.id}
-                        className={`px-4 ${
-                          isUser ? "whitespace-pre-wrap" : ""
-                        }`}
-                      >
-                        <MarkdownPreview
-                          source={msg.content.text}
-                          className="!bg-inherit !text-inherit"
-                        />
+                      <div key={msg.id} className="group relative">
+                        <div
+                          className={`px-4 ${
+                            isUser ? "whitespace-pre-wrap" : ""
+                          }`}
+                        >
+                          <MarkdownPreview
+                            source={msg.content.text}
+                            className="!bg-inherit !text-inherit"
+                          />
+                        </div>
+                        {!isUser && msg.content.type === "text" && (
+                          <button
+                            onClick={() => {
+                              if (msg.content.type === "text") {
+                                void handleInsertContent(msg.content.text);
+                              }
+                            }}
+                            title="Insert into document"
+                            className="absolute top-1 right-5 z-10 px-2 py-1 rounded-md bg-gray-400 hover:bg-gray-500 text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                          >
+                            插入
+                          </button>
+                        )}
                       </div>
                     );
                   }
