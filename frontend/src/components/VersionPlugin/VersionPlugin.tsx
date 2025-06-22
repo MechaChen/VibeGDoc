@@ -1,6 +1,6 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import axios from 'axios';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { tool_hover_style, tool_layout, tool_tooltip_style } from '../ToolbarPlugin/styles';
@@ -214,17 +214,13 @@ function SaveVersionAction() {
   );
 }
 
-type TVersionPluginProps = {
-  isLeader?: boolean,
-}
-
-const saveSnapshotInterval = 5000;
+// const saveSnapshotInterval = 5000;
 const documentId = '4d6e7257-8f78-4a4f-99ea-eb5fe151af8d';
 
-export default function VersionPlugin(props: TVersionPluginProps) {
-  const { isLeader } = props;
-  const timerRef = useRef<number>(NaN);
-  const isTimerInit = useRef(false);
+export default function VersionPlugin() {
+  // const { isLeader } = props;
+  // const timerRef = useRef<number>(NaN);
+  // const isTimerInit = useRef(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // useEffect(() => {

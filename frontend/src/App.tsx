@@ -19,7 +19,6 @@ import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
 import ToolbarPlugin from './components/ToolbarPlugin';
 import { VibeBannerNode, VibeBannerPlugin } from './components/VibeBannerPlugin/VibeBannerPlugin';
 import GhostTextPlugin from './components/GhostTextPlugin';
-import VersionPlugin from './components/VersionPlugin';
 import VibeGDocLogo from '/VibeGDoc.png';
 
 import './App.css'
@@ -236,7 +235,6 @@ function Editor() {
         }
         ErrorBoundary={LexicalErrorBoundary}
       />
-      {/* <VersionPlugin isLeader={isLeader.current} /> */}
       <HistoryPlugin />
       <AutoFocusPlugin />
     </LexicalComposer>

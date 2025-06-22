@@ -6,6 +6,7 @@ import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
 import util from "util";
+import MCPClient from "./mcp-client";
 
 const app = express();
 const execPromise = util.promisify(exec);
@@ -31,6 +32,11 @@ const upload = multer({
 
 app.use(express.json());
 app.use(cors());
+
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+if (!ANTHROPIC_API_KEY) {
+  throw new Error("ANTHROPIC_API_KEY is not set");
+}
 
 const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || "",
@@ -112,6 +118,33 @@ app.post("/summarize-version-diff", async (req, res) => {
 
     res.send(summary.choices[0]?.message.content);
 });
+
+let mcpClient: MCPClient;
+
+app.post('/mcp-init', async (req, res) => {
+    const { serverScriptPath } = req.body;
+
+    try {
+        mcpClient = new MCPClient();
+        const tools = await mcpClient.connectToServer(serverScriptPath);
+
+        function sleep(ms: number) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+        await sleep(3000);
+
+        res.json(tools);
+    } catch (error) {
+        console.error('Error connecting to MCP server:', error);
+        res.status(500).json({ error: 'Failed to connect to MCP server' });
+    }
+});
+
+// app.post('/mcp-chat', async (req, res) => {
+//     const { message } = req.body;
+//     const response = await mcpClient.chat(message);
+//     res.json({ response });
+// });
 
 app.listen(3000, () => {
     console.log("Server is running on port 3000");

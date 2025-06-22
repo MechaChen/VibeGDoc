@@ -5,9 +5,11 @@ import FontStyleToolPlugin from '../FontStyleToolPlugin';
 import ListToolPlugin from '../ListToolPlugin';
 import VibeBannerToolPlugin from '../VibeBannerPlugin/VibeBannerToolPlugin';
 import VersionPlugin from '../VersionPlugin';
+import MCPClientPlugin from '../MCPClientPlugin';
 
 const toolbarPlugins = [
   VoiceToTextToolPlugin,
+  MCPClientPlugin,
   VersionPlugin,
   HeadingToolPlugin,
   FontStyleToolPlugin,
