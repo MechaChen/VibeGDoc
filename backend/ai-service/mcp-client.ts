@@ -92,17 +92,22 @@ export default class MCPClient {
     }
   }
 
-  async chat(query: string) {
+  async chat(query: string, editorContent?: string) {
     const messages: MessageParam[] = [
       {
         role: "user",
         content: query,
       },
     ];
-  
+
+    const systemPrompt = editorContent
+      ? `You are an AI assistant helping a user write in a document. The user's current document content is provided below in Lexical's JSON format. Use this as context to answer the user's questions and provide suggestions.\n\n<document_content>\n${editorContent}\n</document_content>`
+      : undefined;
+
     const response = await this.anthropic.messages.create({
       model: "claude-3-5-sonnet-20241022",
-      max_tokens: 1000,
+      max_tokens: 4000,
+      system: systemPrompt,
       messages,
       tools: this.tools,
     });

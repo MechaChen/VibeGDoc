@@ -141,8 +141,8 @@ app.post('/mcp-init', async (req, res) => {
 });
 
 app.post('/mcp-chat', async (req, res) => {
-    const { query } = req.body;
-    const response = await mcpClient.chat(query);
+    const { query, editorContent } = req.body;
+    const response = await mcpClient.chat(query, editorContent);
     res.json({ response });
 });
 
