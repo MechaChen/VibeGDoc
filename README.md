@@ -11,6 +11,12 @@ An AI-powered collaborative editor for vibe-driven writing, featuring:
 
 ![vibegdoc-tech-stack (2)](https://github.com/user-attachments/assets/95c875de-34ff-4f60-b1c6-869ea39636bb)
 
+&nbsp;
+
+## Architecture
+
+![vibe-g-doc-architecture](https://github.com/user-attachments/assets/97553609-08ff-4b58-bbe5-6404abcbe68a)
+
 
 &nbsp;&nbsp;
 
