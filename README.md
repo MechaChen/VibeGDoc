@@ -3,6 +3,7 @@ An AI-powered collaborative editor for vibe-driven writing, featuring:
 - ✍️ AI-assisted autocomplete
 - 🎙️ AI Voice-to-text recognition
 - 🧭 AI-driven version change summarization
+- 🤖 MCP client & server to connect editor and outer services
 
 &nbsp;&nbsp;
 
@@ -101,3 +102,21 @@ https://github.com/user-attachments/assets/066c6043-9580-4f77-9912-4da0c5e771c9
 
 &nbsp;
 
+
+## Phase 3 - MCP Client & Server
+
+Demo:
+
+https://github.com/user-attachments/assets/567dac22-243c-4948-a802-69171fd0e8c6
+
+&nbsp;
+
+### AI Functionality
+
+| Component | Feature | Description |
+| --- | ----------------------- | ------------------------------------------------------------------------- |
+| 🌐 Frontend | MCP Client UI | User interface for interacting with Claude AI and managing MCP server connections |
+| 🖥️ Backend | MCP Client | Communication layer that bridges Claude AI with MCP servers and manages tool execution |
+| 🖥️ Backend | local Google Calendar MCP Server | Local server that provides calendar-specific tools (list events, create events, etc.) for Claude to use |
+
+&nbsp;&nbsp;
