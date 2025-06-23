@@ -1,22 +1,22 @@
-import VoiceToTextToolPlugin from '../VoiceToTextToolPlugin';
-import UnRedoToolPlugin from '../UnRedoToolPlugin';
-import HeadingToolPlugin from '../HeadingToolPlugin';
-import FontStyleToolPlugin from '../FontStyleToolPlugin';
-import ListToolPlugin from '../ListToolPlugin';
-import VibeBannerToolPlugin from '../VibeBannerPlugin/VibeBannerToolPlugin';
-import VersionPlugin from '../VersionPlugin';
-import MCPClientPlugin from '../MCPClientPlugin';
+import VoiceToTextToolPlugin from "../VoiceToTextToolPlugin";
+import UnRedoToolPlugin from "../UnRedoToolPlugin";
+import HeadingToolPlugin from "../HeadingToolPlugin";
+import FontStyleToolPlugin from "../FontStyleToolPlugin";
+import ListToolPlugin from "../ListToolPlugin";
+import VibeBannerToolPlugin from "../VibeBannerPlugin/VibeBannerToolPlugin";
+import VersionPlugin from "../VersionPlugin";
+import McpClientPlugin from "../McpClientPlugin";
 
 const toolbarPlugins = [
   VoiceToTextToolPlugin,
-  MCPClientPlugin,
+  McpClientPlugin,
   VersionPlugin,
   HeadingToolPlugin,
   FontStyleToolPlugin,
   ListToolPlugin,
   VibeBannerToolPlugin,
   UnRedoToolPlugin,
-]
+];
 
 export default function ToolbarPlugin() {
   return (
@@ -30,5 +30,5 @@ export default function ToolbarPlugin() {
         </>
       ))}
     </div>
-  )
+  );
 }

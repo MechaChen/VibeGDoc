@@ -1,1 +1,1 @@
-export { default } from "./MCPClientPlugin";
+export { default } from "./McpClientPlugin";

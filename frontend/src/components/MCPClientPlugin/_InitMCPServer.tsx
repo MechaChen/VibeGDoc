@@ -3,9 +3,10 @@ import axios from "axios";
 
 import bouncingCirclesWhiteIcon from "../../assets/bouncing-circles-white.svg";
 import { serviceDomains } from "../../config/services";
+import type { TServer } from "./types";
 
 
-const InitMCPServer = ({
+const InitMcpServer = ({
   server,
   setServer,
 }: {
@@ -120,4 +121,4 @@ const InitMCPServer = ({
   );
 };
 
-export default InitMCPServer;
+export default InitMcpServer;
