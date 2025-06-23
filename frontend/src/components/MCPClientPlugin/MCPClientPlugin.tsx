@@ -29,7 +29,7 @@ const Drawer = ({
   position = "right",
 }: DrawerProps) => {
   const drawerClasses = `
-    fixed top-0 h-full w-[400px] bg-white z-[1050] flex flex-col
+    fixed top-0 h-full w-[550px] bg-white z-[1050] flex flex-col
     shadow-lg transition-transform duration-300 transform
     ${position === "right" ? "right-0 rounded-l-xl" : "left-0 rounded-r-xl"}
     ${

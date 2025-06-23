@@ -224,7 +224,7 @@ function Editor() {
       <RichTextPlugin
         contentEditable={
           <ContentEditable
-            className="h-[300px] w-full border-b border-l border-r border-gray-300 p-4 rounded-b-xl overflow-y-auto"
+            className="h-[400px] w-full border-b border-l border-r border-gray-300 p-4 rounded-b-xl overflow-y-auto"
             aria-placeholder={'Enter some text...'}
             placeholder={<div className="absolute top-12.5 left-0 text-gray-500 p-4">Enter some text...</div>}
             autoComplete="off"

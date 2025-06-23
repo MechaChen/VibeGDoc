@@ -101,7 +101,7 @@ export default class MCPClient {
     ];
 
     const systemPrompt = editorContent
-      ? `You are an AI assistant helping a user write in a document. The user's current document content is provided below in Lexical's JSON format. Use this as context to answer the user's questions and provide suggestions.\n\n<document_content>\n${editorContent}\n</document_content>`
+      ? `Today is ${new Date().toLocaleDateString()}. You are an AI assistant helping a user write in a document. The user's current document content is provided below in Lexical's JSON format. Use this as context to answer the user's questions and provide suggestions.\n\n<document_content>\n${editorContent}\n</document_content>`
       : undefined;
 
     const response = await this.anthropic.messages.create({

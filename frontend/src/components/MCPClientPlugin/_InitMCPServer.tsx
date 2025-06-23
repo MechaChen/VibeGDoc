@@ -58,7 +58,7 @@ const InitMcpServer = ({
             value={path}
             onChange={(e) => setPath(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-            placeholder="e.g., mcp-servers/weather.js"
+            placeholder="e.g., local-mcp-servers/weather.js"
             required
           />
           <button

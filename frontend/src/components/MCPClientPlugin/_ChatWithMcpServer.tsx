@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { $generateNodesFromDOM } from "@lexical/html";
@@ -201,6 +201,13 @@ const ChatWithMCPServer = () => {
     return group;
   }, []);
 
+  useEffect(() => {
+    const scrollToBottom = document.getElementById("scroll-to-bottom");
+    if (scrollToBottom) {
+      scrollToBottom.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   return (
     <div className="flex flex-col flex-grow">
       <h3 className="text-lg font-bold text-gray-900 pb-6">
@@ -248,6 +255,7 @@ const ChatWithMCPServer = () => {
         setMessages={setMessages}
         setIsLoading={setIsLoading}
       />
+      <div id="scroll-to-bottom" />
     </div>
   );
 };

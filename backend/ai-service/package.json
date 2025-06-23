@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "bun run index.ts --watch",
-    "build-mcp-servers": "bun build ./mcp-servers/*.ts --outdir ./mcp-servers/ --target node"
+    "build-mcp-servers": "bun build ./local-mcp-servers/*.ts --outdir ./local-mcp-servers/ --target node"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -16,12 +16,14 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.54.0",
+    "@google-cloud/local-auth": "^3.0.1",
     "@modelcontextprotocol/sdk": "^1.13.0",
     "@types/cors": "^2.8.17",
     "@types/multer": "^1.4.12",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "googleapis": "^150.0.1",
     "multer": "^1.4.5-lts.2",
     "openai": "^4.91.0"
   }
